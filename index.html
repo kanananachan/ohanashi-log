@@ -226,8 +226,7 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
   border: 1px solid var(--border);
   border-radius: var(--border-radius-lg);
   padding: 12px 14px;
-  min-width: 220px;
-  max-width: 280px;
+  width: 300px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.12);
   pointer-events: none;
 }
@@ -315,11 +314,11 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
             <th style="width:7em">日付</th>
             <th style="width:4em">曜日</th>
             <th style="width:7em">種別</th>
-            <th>タイトル</th>
-            <th style="width:12%">出典</th>
-            <th style="width:12%">作者</th>
-            <th style="width:12%">訳者</th>
-            <th style="width:12%">絵</th>
+            <th style="width:25%">タイトル</th>
+            <th style="width:10%">出典</th>
+            <th style="width:10%">作者</th>
+            <th style="width:10%">訳・編</th>
+            <th style="width:10%">絵</th>
             <th style="width:6em">話し手</th>
           </tr>
         </thead>
@@ -352,20 +351,20 @@ const TYPE_LABEL = {katarite:'おはなし',ehon:'絵本'};
 const records = [
   {
     id: 1,
-    num: 1,
+    num: 1, times: ["15:00","17:45"],
     date: '2026-02-11',
     dow: '水曜日',
     progs: [
-      { type: 'katarite', title: 'あくびがでるほどおもしろい話', source: '', author: '松岡享子', translator: '', illustrator: '', reader: 'おおさん', session: '前半' },
+      { type: 'katarite', title: 'あくびがでるほどおもしろい話', source: 'おはなしのろうそく５', author: '松岡享子', translator: '', illustrator: '', reader: 'おおさん', session: '前半' },
       { type: 'ehon', title: 'ゆうかんなアイリーン', author: 'ウィリアム・スタイグ', translator: 'おがわえつこ', illustrator: 'ウィリアム・スタイグ', reader: 'まるちゃん', session: '前半' },
-      { type: 'katarite', title: 'あくびがでるほどおもしろい話', source: '', author: '松岡享子', translator: '', illustrator: '', reader: 'おおさん', session: '後半' },
+      { type: 'katarite', title: 'あくびがでるほどおもしろい話', source: 'おはなしのろうそく５', author: '松岡享子', translator: '', illustrator: '', reader: 'おおさん', session: '後半' },
       { type: 'ehon', title: 'ゆうかんなアイリーン', author: 'ウィリアム・スタイグ', translator: 'おがわえつこ', illustrator: 'ウィリアム・スタイグ', reader: 'まるちゃん', session: '後半' },
       { type: 'ehon', title: 'おおかみのおなかのなかで', author: 'マック・バーネット', translator: 'なかがわちひろ', illustrator: 'ジョン・クラッセン', reader: 'まるちゃん', session: '後半' }
     ]
   },
   {
     id: 2,
-    num: 2,
+    num: 2, times: ["15:00","17:45"],
     date: '2026-02-25',
     dow: '水曜日',
     progs: [
@@ -375,7 +374,7 @@ const records = [
   },
   {
     id: 3,
-    num: 3,
+    num: 3, times: ["15:00","17:45"],
     date: '2026-03-04',
     dow: '水曜日',
     progs: [
@@ -385,7 +384,7 @@ const records = [
   },
   {
     id: 4,
-    num: 4,
+    num: 4, times: ["15:00","17:45"],
     date: '2026-03-11',
     dow: '水曜日',
     progs: [
@@ -398,7 +397,7 @@ const records = [
   },
   {
     id: 6,
-    num: 6,
+    num: 6, times: ["15:00","18:00"],
     date: '2026-04-01',
     dow: '水曜日',
     progs: [
@@ -410,27 +409,27 @@ const records = [
   },
   {
     id: 5,
-    num: 5,
+    num: 5, times: ["15:00","17:45"],
     date: '2026-03-18',
     dow: '水曜日',
     progs: [
-      { type: 'katarite', title: 'アナンシと五', source: '子どもに聞かせる世界の民話', author: '矢崎源九郎（編）', translator: '', illustrator: '', reader: 'そねちゃん' },
+      { type: 'katarite', title: 'アナンシと五', source: '子どもに聞かせる世界の民話', author: 'ジャマイカの昔話', translator: '矢崎源九郎', illustrator: '', reader: 'そねちゃん' },
       { type: 'ehon', title: 'のいちごつみ', author: 'さとうゆきこ', translator: '', illustrator: 'さとうゆきこ', reader: 'かなえちゃん' }
     ]
   },
   {
     id: 12,
-    num: 11,
+    num: 11, times: ["16:00"],
     date: '2026-04-24',
     dow: '金曜日',
     progs: [
-      { type: 'katarite', title: 'アナンシと五', source: '子どもに聞かせる世界の民話', author: '矢崎源九郎（編）', translator: '', illustrator: '', reader: 'そねちゃん' },
+      { type: 'katarite', title: 'アナンシと五', source: '子どもに聞かせる世界の民話', author: 'ジャマイカの昔話', translator: '矢崎源九郎', illustrator: '', reader: 'そねちゃん' },
       { type: 'ehon', title: 'はなのすきなうし', author: 'マンロー・リーフ', translator: '光吉夏弥', illustrator: 'ロバート・ローソン', reader: 'かなえちゃん' }
     ]
   },
   {
     id: 11,
-    num: 10,
+    num: 10, times: ["17:00"],
     date: '2026-04-16',
     dow: '木曜日',
     progs: [
@@ -439,7 +438,7 @@ const records = [
     ]
   },
   {
-    num: 7,
+    num: 7, times: ["15:00","18:00"],
     date: '2026-04-02',
     dow: '木曜日',
     progs: [
@@ -448,7 +447,7 @@ const records = [
     ]
   },
   {
-    num: 8,
+    num: 8, times: ["15:00","18:00"],
     date: '2026-04-03',
     dow: '金曜日',
     progs: [
@@ -457,7 +456,7 @@ const records = [
     ]
   },
   {
-    num: 9,
+    num: 9, times: ["15:00","18:00"],
     date: '2026-04-08',
     dow: '水曜日',
     progs: [
@@ -526,7 +525,7 @@ function renderCal(){
       const isFuture=dt>today;
       const rec=byDate[ds];
       const numClass=dow===0?'sun':dow===6?'sat':'';
-      cells+=`<div class="cal-day${isToday?' today':''}${rec?' has-event':''}" ${rec?`onmouseenter="showPopup(event,'${ds}')" onmouseleave="hidePopup()"`:''}>
+      cells+=`<div class="cal-day${isToday?' today':''}${rec?' has-event':''}" ${rec?`onmouseenter="showPopup(event,'${ds}')" onmouseleave="hidePopup()" onclick="jumpToNum('${ds}')"`:''}>
         <div class="cal-day-num ${numClass}">${d}</div>
         ${rec?`<div class="cal-dot ${isFuture?'future':'done'}"></div><div style="font-size:8px;text-align:center;color:${isFuture?'#8a6020':'#3d6b41'};margin-top:1px">第${rec.num}回</div>`:''}
       </div>`;
@@ -539,6 +538,16 @@ function renderCal(){
   }
   html+='</div>';
   document.getElementById('cal-grid').innerHTML=html;
+}
+
+function jumpToNum(dateStr){
+  hidePopup();
+  const navBtn = document.querySelectorAll('.navbtn')[1];
+  sw('num', navBtn);
+  setTimeout(()=>{
+    const el = document.getElementById('rec-'+dateStr);
+    if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+  }, 50);
 }
 
 function showPopup(e,dateStr){
@@ -565,11 +574,11 @@ function showPopup(e,dateStr){
       <div class="cal-popup-body"><div class="cal-popup-title">${p.title}</div>
       ${p.reader?`<div class="cal-popup-reader">${p.reader}</div>`:''}</div></div>`).join('');
   }
-  popup.innerHTML=`<div class="cal-popup-head">第${r.num}回　${fmtDate(dateStr)}（${SHORT[r.dow]}）${isFuture?' ／ 実施予定':''}</div>${progsHtml}`;
+  popup.innerHTML=`<div class="cal-popup-head">第${r.num}回　${fmtDate(dateStr)}（${SHORT[r.dow]}）${r.times?'　'+r.times.join('／'):''}${isFuture?'　<span style="font-size:9px;background:#d5cfc8;color:#5f5e5a;padding:1px 6px;border-radius:10px;font-style:normal">未実施</span>':''}</div>${progsHtml}`;
   popup.classList.add('show');
   const rect=e.target.closest('.cal-day').getBoundingClientRect();
   let left=rect.right+8, top=rect.top;
-  if(left+290>window.innerWidth) left=rect.left-298;
+  if(left+300>window.innerWidth) left=rect.left-308;
   if(top+320>window.innerHeight) top=window.innerHeight-328;
   popup.style.left=left+'px';
   popup.style.top=Math.max(8,top)+'px';
@@ -686,11 +695,12 @@ function renderNum(){
           </div>
         </div>`).join('');
     }
-    return `<div class="num-item">
+    return `<div class="num-item" id="rec-${r.date}">
       <div class="num-head" style="${isFuture?'background:#d5cfc8':''}">
         <span class="num-badge">第${r.num}回</span>
         <span class="num-date">${fmtDate(r.date)}</span>
         <span class="num-dow">${SHORT[r.dow]}曜日</span>
+        ${r.times?`<span style="font-size:11px;color:var(--muted)">${r.times.join('　')}</span>`:''}
         ${isFuture?'<span style="font-size:11px;color:#fff;font-style:italic">実施予定</span>':''}
       </div>
       <div class="num-body">${progsHtml}</div>
@@ -707,7 +717,11 @@ function renderSrch(){
   const rows = [];
   sorted().forEach(r=>{
     if(dow && r.dow!==dow) return;
+    const seen = new Set();
     (r.progs||[]).forEach(p=>{
+      const key = `${r.date}|${p.type}|${p.title}`;
+      if(seen.has(key)) return;
+      seen.add(key);
       if(type && p.type!==type) return;
       if(q && !`${p.title} ${p.author} ${p.translator} ${p.illustrator} ${p.reader} ${p.source}`.toLowerCase().includes(q)) return;
       rows.push({r, p});
