@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>はらぺこ文庫 おはなしの時間</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kurenaido&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #2a2118;
+  --paper: #faf7f2;
+  --paper2: #f3ede3;
+  --sage: #7a9e7e;
+  --sage-light: #e8f0e8;
+  --brown: #8b6f47;
+  --brown-light: #f0e8dc;
+  --cream: #fffdf9;
+  --muted: #9a8f82;
+  --border: #ddd5c8;
+  --ehon: #5b7fa6;
+  --ehon-light: #e8eef5;
+  --katarite: #7a9e7e;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Noto Sans JP', sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+/* ヘッダー */
+.header {
+  background: var(--cream);
+  border-bottom: 1px solid var(--border);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.header-title {
+  font-family: 'Zen Kurenaido', serif;
+  font-size: 22px;
+  color: var(--ink);
+  letter-spacing: 0.05em;
+}
+.header-sub {
+  font-size: 12px;
+  color: var(--muted);
+}
+.header-count {
+  font-size: 12px;
+  color: var(--muted);
+  margin-left: auto;
+}
+
+/* ナビ */
+.nav {
+  display: flex;
+  gap: 4px;
+  padding: 0.75rem 1.5rem;
+  background: var(--cream);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+.navbtn {
+  padding: 5px 16px;
+  font-size: 12px;
+  font-family: 'Noto Sans JP', sans-serif;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.navbtn:hover { background: var(--paper2); color: var(--ink); }
+.navbtn.on { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+
+/* メイン */
+.main { padding: 1.25rem 1.5rem; max-width: 900px; margin: 0 auto; }
+.view { display: none; }
+.view.on { display: block; }
+
+/* 曜日ビュー */
+.dow-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; }
+.dow-day-block { display: flex; flex-direction: column; gap: 10px; }
+.dow-day-label { font-family: 'Zen Kurenaido', serif; font-size: 16px; color: var(--ink); padding-bottom: 6px; border-bottom: 2px solid var(--border); margin-bottom: 2px; }
+.dow-col { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--cream); }
+.dow-head { padding: 7px 12px; font-size: 11px; font-weight: 500; background: var(--paper2); color: var(--muted); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.dow-head.has-k { background: var(--sage-light); color: #3d6b41; }
+.dow-head.has-e { background: var(--ehon-light); color: #2d5a8a; }
+.dow-head-count { font-size: 10px; font-weight: 400; }
+.dow-body { padding: 6px 10px; }
+.dow-title-item { font-size: 12px; color: var(--ink); padding: 5px 0; border-bottom: 1px solid var(--border); line-height: 1.4; display: flex; align-items: baseline; gap: 5px; }
+.dow-title-item:last-child { border-bottom: none; padding-bottom: 0; }
+.dow-title-num { font-size: 10px; color: var(--muted); flex-shrink: 0; }
+.dow-empty { font-size: 11px; color: var(--border); text-align: center; padding: 12px 0; }
+.badge-k { background: var(--sage-light); color: #3d6b41; }
+.badge-e { background: var(--ehon-light); color: #2d5a8a; }
+.prog-badge { display:inline-block; font-size:9px; padding:1px 5px; border-radius:10px; flex-shrink:0; margin-top:1px; white-space:nowrap; }
+
+/* 回数順リスト */
+.ctrl { display: flex; gap: 8px; margin-bottom: 1rem; flex-wrap: wrap; }
+.ctrl select, .ctrl input {
+  font-size: 13px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--cream);
+  color: var(--ink);
+  font-family: 'Noto Sans JP', sans-serif;
+}
+.num-list {}
+.num-item {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--cream);
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+.num-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--paper2);
+}
+.num-badge {
+  font-family: 'Zen Kurenaido', serif;
+  font-size: 13px;
+  color: var(--brown);
+  background: var(--brown-light);
+  padding: 3px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.num-date { font-size: 13px; color: var(--ink); }
+.num-dow { font-size: 11px; color: var(--muted); }
+.num-body { padding: 10px 16px; }
+.num-prog {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+.num-prog:last-child { border-bottom: none; padding-bottom: 0; }
+.num-prog-badge {
+  font-size: 10px;
+  padding: 2px 0;
+  border-radius: 10px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  width: 4.5em;
+  text-align: center;
+  display: inline-block;
+}
+.num-prog-body {}
+.num-prog-title { font-size: 14px; font-weight: 500; color: var(--ink); }
+.num-prog-credit { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.num-prog-reader { font-size: 12px; color: var(--brown); margin-top: 1px; }
+
+/* テーブルビュー */
+.tbl-wrap { overflow-x: auto; }
+table.srch-tbl { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
+table.srch-tbl th {
+  background: var(--paper2);
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 11px;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  text-align: left;
+  white-space: nowrap;
+}
+table.srch-tbl td {
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  vertical-align: top;
+  background: var(--cream);
+  line-height: 1.5;
+  height: 3em;
+  overflow: hidden;
+  display: table-cell;
+}
+table.srch-tbl tr:hover td { background: var(--paper2); }
+.tbl-num { color: var(--brown); font-size: 11px; white-space: nowrap; }
+.tbl-date { color: var(--muted); font-size: 11px; white-space: nowrap; }
+.tbl-title { font-weight: 500; color: var(--ink); }
+.tbl-credit { color: var(--muted); font-size: 11px; margin-top: 2px; }
+.tbl-reader { color: var(--brown); font-size: 11px; margin-top: 1px; }
+.hl { background: #ffeebb; border-radius: 2px; padding: 0 1px; }
+.empty { text-align: center; padding: 3rem; color: var(--muted); font-size: 13px; }
+.reslabel { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+
+/* 年間カレンダー */
+.cal-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; }
+.cal-month { border: 1px solid var(--border); border-radius: var(--border-radius-lg); overflow: hidden; background: var(--cream); }
+.cal-month-head { padding: 7px 12px; font-size: 13px; font-weight: 500; color: var(--ink); background: var(--paper2); border-bottom: 1px solid var(--border); font-family: 'Zen Kurenaido', serif; }
+.cal-dow-row { display: grid; grid-template-columns: repeat(7, 1fr); background: var(--paper2); border-bottom: 1px solid var(--border); }
+.cal-dow-cell { text-align: center; font-size: 10px; color: var(--muted); padding: 3px 0; }
+.cal-dow-cell.sun { color: #c0392b; }
+.cal-dow-cell.sat { color: #2980b9; }
+.cal-days { display: grid; grid-template-columns: repeat(7, 1fr); }
+.cal-day { min-height: 36px; border-right: 0.5px solid var(--border); border-bottom: 0.5px solid var(--border); padding: 3px 2px; font-size: 10px; position: relative; }
+.cal-day:nth-child(7n) { border-right: none; }
+.cal-day.empty { background: var(--paper); }
+.cal-day.today .cal-day-num { background: var(--brown); color: #fff; border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; }
+.cal-day-num { font-size: 10px; color: var(--muted); line-height: 1.6; text-align: center; }
+.cal-day-num.sun { color: #c0392b; }
+.cal-day-num.sat { color: #2980b9; }
+.cal-dot { width: 6px; height: 6px; border-radius: 50%; margin: 2px auto 0; }
+.cal-dot.done { background: #7a9e7e; }
+.cal-dot.future { background: #e8c87a; }
+.cal-day.has-event { cursor: pointer; }
+.cal-day.has-event:hover { background: var(--paper2); }
+.cal-popup {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius-lg);
+  padding: 12px 14px;
+  min-width: 220px;
+  max-width: 280px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  pointer-events: none;
+}
+.cal-popup.show { display: block; }
+.cal-popup-head { font-size: 12px; font-weight: 500; color: var(--brown); margin-bottom: 8px; padding-bottom: 6px; border-bottom: 0.5px solid var(--border); }
+.cal-popup-prog { display: flex; align-items: baseline; gap: 6px; margin-bottom: 5px; }
+.cal-popup-prog:last-child { margin-bottom: 0; }
+.cal-popup-badge { display: inline-block; font-size: 9px; padding: 1px 0; border-radius: 10px; flex-shrink: 0; width: 4em; text-align: center; }
+.cal-popup-body { flex: 1; }
+.cal-popup-title { font-size: 12px; font-weight: 500; color: var(--ink); }
+.cal-popup-credit { font-size: 11px; color: var(--muted); margin-top: 1px; }
+.cal-popup-reader { font-size: 11px; color: var(--brown); }
+.cal-popup-session { font-size: 10px; color: var(--muted); margin: 6px 0 3px; border-top: 0.5px solid var(--border); padding-top: 4px; }
+
+/* フッター */
+.footer {
+  text-align: center;
+  padding: 2rem;
+  font-size: 11px;
+  color: var(--border);
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-title">はらぺこ文庫　おはなしの時間</div>
+  <div class="header-sub">水・木・金曜日開催</div>
+  <div class="header-count" id="hcount"></div>
+</div>
+
+<div class="nav">
+  <button class="navbtn on" onclick="sw('cal',this)">年間カレンダー</button>
+  <button class="navbtn" onclick="sw('num',this)">開催情報</button>
+  <button class="navbtn" onclick="sw('dow',this)">曜日ごと作品</button>
+  <button class="navbtn" onclick="sw('srch',this)">データ一覧／検索</button>
+</div>
+
+<div class="main">
+
+  <!-- 曜日ビュー -->
+  <div class="view" id="v-dow">
+    <div style="font-size:11px;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+      <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--border)"></span>グレーのタイトルは実施予定
+    </div>
+    <div class="dow-grid" id="dow-grid"></div>
+  </div>
+
+  <!-- 回数順 -->
+  <div class="view" id="v-num">
+    <div class="ctrl">
+      <select id="num-dow" onchange="renderNum()">
+        <option value="">曜日：すべて</option>
+        <option>水曜日</option><option>木曜日</option><option>金曜日</option>
+      </select>
+      <select id="num-type" onchange="renderNum()">
+        <option value="">種別：すべて</option>
+        <option value="katarite">おはなし</option>
+        <option value="ehon">絵本</option>
+      </select>
+    </div>
+    <div id="num-list"></div>
+  </div>
+
+  <!-- テーブルビュー -->
+  <div class="view" id="v-srch">
+    <div class="ctrl">
+      <input type="text" id="srch-q" placeholder="タイトル・作者・話し手で検索…" oninput="renderSrch()" style="flex:1;min-width:200px">
+      <select id="srch-dow" onchange="renderSrch()">
+        <option value="">曜日：すべて</option>
+        <option>水曜日</option><option>木曜日</option><option>金曜日</option>
+      </select>
+      <select id="srch-type" onchange="renderSrch()">
+        <option value="">種別：すべて</option>
+        <option value="katarite">おはなし</option>
+        <option value="ehon">絵本</option>
+      </select>
+    </div>
+    <div id="srch-label" class="reslabel"></div>
+    <div class="tbl-wrap">
+      <table class="srch-tbl">
+        <thead>
+          <tr>
+            <th style="width:3em">回</th>
+            <th style="width:7em">日付</th>
+            <th style="width:4em">曜日</th>
+            <th style="width:7em">種別</th>
+            <th>タイトル</th>
+            <th style="width:12%">出典</th>
+            <th style="width:12%">作者</th>
+            <th style="width:12%">訳者</th>
+            <th style="width:12%">絵</th>
+            <th style="width:6em">話し手</th>
+          </tr>
+        </thead>
+        <tbody id="srch-list"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 年間カレンダー -->
+  <div class="view on" id="v-cal">
+    <div class="ctrl" style="margin-bottom:1rem">
+      <select id="cal-year" onchange="renderCal()"></select>
+    </div>
+    <div id="cal-grid"></div>
+  </div>
+
+</div>
+
+<div class="footer">はらぺこ文庫 おはなしの時間 記録</div>
+<div class="cal-popup" id="cal-popup"></div>
+
+<script>
+const EIGYO = ['水曜日','木曜日','金曜日'];
+const ALLDAYS = ['日曜日','月曜日','火曜日','水曜日','木曜日','金曜日','土曜日'];
+const SHORT = {水曜日:'水',木曜日:'木',金曜日:'金'};
+const TYPE_LABEL = {katarite:'おはなし',ehon:'絵本'};
+
+// ===== データ =====
+// ここにデータが自動で追記されます
+const records = [
+  {
+    id: 1,
+    num: 1,
+    date: '2026-02-11',
+    dow: '水曜日',
+    progs: [
+      { type: 'katarite', title: 'あくびがでるほどおもしろい話', source: '', author: '松岡享子', translator: '', illustrator: '', reader: 'おおさん', session: '前半' },
+      { type: 'ehon', title: 'ゆうかんなアイリーン', author: 'ウィリアム・スタイグ', translator: 'おがわえつこ', illustrator: 'ウィリアム・スタイグ', reader: 'まるちゃん', session: '前半' },
+      { type: 'katarite', title: 'あくびがでるほどおもしろい話', source: '', author: '松岡享子', translator: '', illustrator: '', reader: 'おおさん', session: '後半' },
+      { type: 'ehon', title: 'ゆうかんなアイリーン', author: 'ウィリアム・スタイグ', translator: 'おがわえつこ', illustrator: 'ウィリアム・スタイグ', reader: 'まるちゃん', session: '後半' },
+      { type: 'ehon', title: 'おおかみのおなかのなかで', author: 'マック・バーネット', translator: 'なかがわちひろ', illustrator: 'ジョン・クラッセン', reader: 'まるちゃん', session: '後半' }
+    ]
+  },
+  {
+    id: 2,
+    num: 2,
+    date: '2026-02-25',
+    dow: '水曜日',
+    progs: [
+      { type: 'katarite', title: 'ホットケーキ', source: 'おはなしのろうそく9', author: 'ノルウェーの昔話', translator: '松岡享子', illustrator: '', reader: 'おおさん' },
+      { type: 'ehon', title: '根っこのこどもたち目をさます', author: 'ヘレン・ディーン・フィッシュ', translator: '石井桃子', illustrator: 'ジビレ・フォン・オルファース', reader: 'おりちゃん' }
+    ]
+  },
+  {
+    id: 3,
+    num: 3,
+    date: '2026-03-04',
+    dow: '水曜日',
+    progs: [
+      { type: 'ehon', title: 'にひきのこぐま', author: 'イーラ', translator: '松岡享子', illustrator: '', reader: 'おりちゃん' },
+      { type: 'katarite', title: '世界でいちばんきれいな声', source: 'おはなしのろうそく11', author: 'マージョリー・ラ・フルール', translator: '山口雅子', illustrator: '', reader: 'かなえちゃん' }
+    ]
+  },
+  {
+    id: 4,
+    num: 4,
+    date: '2026-03-11',
+    dow: '水曜日',
+    progs: [
+      { type: 'katarite', title: '雌牛のブーコラ', source: '愛蔵版おはなしのろうそく12', author: '東京子ども図書館（編）', translator: '', illustrator: '', reader: 'おおさん', session: '前半' },
+      { type: 'ehon', title: '落語絵本まんじゅうこわい', author: '川端誠', translator: '', illustrator: '川端誠', reader: 'まるちゃん', session: '前半' },
+      { type: 'katarite', title: '雌牛のブーコラ', source: '愛蔵版おはなしのろうそく12', author: '東京子ども図書館（編）', translator: '', illustrator: '', reader: 'おおさん', session: '後半' },
+      { type: 'ehon', title: 'へろへろおじさん', author: '佐々木マキ', translator: '', illustrator: '佐々木マキ', reader: 'そねちゃん', session: '後半' },
+      { type: 'ehon', title: 'わにわにのおおけが', author: '小風さち', translator: '', illustrator: '山口マオ', reader: 'そねちゃん', session: '後半' }
+    ]
+  },
+  {
+    id: 6,
+    num: 6,
+    date: '2026-04-01',
+    dow: '水曜日',
+    progs: [
+      { type: 'ehon', title: 'ふくろうくん', author: 'アーノルド・ローベル', translator: '三木卓', illustrator: 'アーノルド・ローベル', reader: 'しーちゃん', session: '前半' },
+      { type: 'ehon', title: 'ねえ、どれがいい？', author: 'ジョン・バーニンガム', translator: 'まつかわまゆみ', illustrator: 'ジョン・バーニンガム', reader: 'かなえちゃん', session: '前半' },
+      { type: 'ehon', title: 'こぶたのプーちゃん', author: '本田いづみ', translator: '', illustrator: 'さとうあや', reader: 'かなえちゃん', session: '後半' },
+      { type: 'ehon', title: 'ちいさなたいこ', author: '松岡享子', translator: '', illustrator: '秋野不矩', reader: 'しーちゃん', session: '後半' }
+    ]
+  },
+  {
+    id: 5,
+    num: 5,
+    date: '2026-03-18',
+    dow: '水曜日',
+    progs: [
+      { type: 'katarite', title: 'アナンシと五', source: '子どもに聞かせる世界の民話', author: '矢崎源九郎（編）', translator: '', illustrator: '', reader: 'そねちゃん' },
+      { type: 'ehon', title: 'のいちごつみ', author: 'さとうゆきこ', translator: '', illustrator: 'さとうゆきこ', reader: 'かなえちゃん' }
+    ]
+  },
+  {
+    id: 12,
+    num: 11,
+    date: '2026-04-24',
+    dow: '金曜日',
+    progs: [
+      { type: 'katarite', title: 'アナンシと五', source: '子どもに聞かせる世界の民話', author: '矢崎源九郎（編）', translator: '', illustrator: '', reader: 'そねちゃん' },
+      { type: 'ehon', title: 'はなのすきなうし', author: 'マンロー・リーフ', translator: '光吉夏弥', illustrator: 'ロバート・ローソン', reader: 'かなえちゃん' }
+    ]
+  },
+  {
+    id: 11,
+    num: 10,
+    date: '2026-04-16',
+    dow: '木曜日',
+    progs: [
+      { type: 'katarite', title: 'エパミナンダス', source: 'おはなしのろうそく１', author: 'ブライアント', translator: '松岡享子', illustrator: '', reader: 'まるちゃん' },
+      { type: 'ehon', title: 'はなのすきなうし', author: 'マンロー・リーフ', translator: '光吉夏弥', illustrator: 'ロバート・ローソン', reader: 'かなえちゃん' }
+    ]
+  },
+  {
+    num: 7,
+    date: '2026-04-02',
+    dow: '木曜日',
+    progs: [
+      { type: 'ehon', title: 'チムとゆうかんなせんちょうさん', author: 'エドワード・アーディゾーニ', translator: 'せたていじ', illustrator: 'エドワード・アーディゾーニ', reader: 'ちゃこさん' },
+      { type: 'ehon', title: 'ねえ、どれがいい？', author: 'ジョン・バーニンガム', translator: 'まつかわまゆみ', illustrator: 'ジョン・バーニンガム', reader: 'しーちゃん' }
+    ]
+  },
+  {
+    num: 8,
+    date: '2026-04-03',
+    dow: '金曜日',
+    progs: [
+      { type: 'ehon', title: 'チムとゆうかんなせんちょうさん', author: 'エドワード・アーディゾーニ', translator: 'せたていじ', illustrator: 'エドワード・アーディゾーニ', reader: 'ちゃこさん' },
+      { type: 'ehon', title: 'ねえ、どれがいい？', author: 'ジョン・バーニンガム', translator: 'まつかわまゆみ', illustrator: 'ジョン・バーニンガム', reader: 'しーちゃん' }
+    ]
+  },
+  {
+    num: 9,
+    date: '2026-04-08',
+    dow: '水曜日',
+    progs: [
+      { type: 'katarite', title: 'エパミナンダス', source: 'おはなしのろうそく１', author: 'ブライアント', translator: '松岡享子', illustrator: '', reader: 'まるちゃん' },
+      { type: 'ehon', title: 'はなのすきなうし', author: 'マンロー・リーフ', translator: '光吉夏弥', illustrator: 'ロバート・ローソン', reader: 'かなえちゃん' }
+    ]
+  }
+];
+
+const NICKNAME = {
+  'まるちゃん':'丸子', 'かなえちゃん':'和', 'そねちゃん':'曽根原',
+  'ちゃこさん':'武田', 'しーちゃん':'石井', 'おりちゃん':'折井', 'おおさん':'大手'
+};
+function formalName(n){ return NICKNAME[n] || n; }
+function getDow(ds){ return ALLDAYS[new Date(ds+'T12:00:00').getDay()]; }
+function fmtDateSlash(ds){ const d=new Date(ds+'T12:00:00'); return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`; }
+function fmtDate(ds){ const d=new Date(ds+'T12:00:00'); return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`; }
+function fmtDateShort(ds){ const d=new Date(ds+'T12:00:00'); return `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()}`; }
+function sorted(){ return [...records].sort((a,b)=>b.num-a.num); }
+
+function creditStr(p){
+  const parts = [];
+  if(p.source) parts.push('出典：'+p.source);
+  if(p.author) parts.push('作：'+p.author);
+  if(p.translator) parts.push('訳：'+p.translator);
+  if(p.illustrator) parts.push('絵：'+p.illustrator);
+  return parts.join('　');
+}
+
+function sw(v, btn){
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('on'));
+  document.querySelectorAll('.navbtn').forEach(el=>el.classList.remove('on'));
+  document.getElementById('v-'+v).classList.add('on');
+  btn.classList.add('on');
+  if(v==='srch') renderSrch();
+  if(v==='num') renderNum();
+  if(v==='cal') renderCal();
+}
+
+function initCalYear(){
+  const years = [...new Set(records.map(r=>r.date.slice(0,4)))].sort();
+  const sel = document.getElementById('cal-year');
+  sel.innerHTML = years.map(y=>`<option>${y}</option>`).join('');
+  const thisYear = new Date().getFullYear().toString();
+  if(years.includes(thisYear)) sel.value = thisYear;
+}
+
+function renderCal(){
+  const year = parseInt(document.getElementById('cal-year').value);
+  const today = new Date(); today.setHours(0,0,0,0);
+  const byDate = {};
+  records.forEach(r=>{ if(r.date.startsWith(year)) byDate[r.date]=r; });
+  const MNAMES=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  const DNAMES=['日','月','火','水','木','金','土'];
+  let html='<div class="cal-grid">';
+  for(let m=0;m<12;m++){
+    const firstDay=new Date(year,m,1).getDay();
+    const daysInMonth=new Date(year,m+1,0).getDate();
+    let cells='';
+    for(let i=0;i<firstDay;i++) cells+=`<div class="cal-day empty"></div>`;
+    for(let d=1;d<=daysInMonth;d++){
+      const ds=`${year}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const dt=new Date(year,m,d);
+      const dow=dt.getDay();
+      const isToday=dt.getTime()===today.getTime();
+      const isFuture=dt>today;
+      const rec=byDate[ds];
+      const numClass=dow===0?'sun':dow===6?'sat':'';
+      cells+=`<div class="cal-day${isToday?' today':''}${rec?' has-event':''}" ${rec?`onmouseenter="showPopup(event,'${ds}')" onmouseleave="hidePopup()"`:''}>
+        <div class="cal-day-num ${numClass}">${d}</div>
+        ${rec?`<div class="cal-dot ${isFuture?'future':'done'}"></div><div style="font-size:8px;text-align:center;color:${isFuture?'#8a6020':'#3d6b41'};margin-top:1px">第${rec.num}回</div>`:''}
+      </div>`;
+    }
+    html+=`<div class="cal-month">
+      <div class="cal-month-head">${MNAMES[m]}</div>
+      <div class="cal-dow-row">${DNAMES.map((n,i)=>`<div class="cal-dow-cell${i===0?' sun':i===6?' sat':''}">${n}</div>`).join('')}</div>
+      <div class="cal-days">${cells}</div>
+    </div>`;
+  }
+  html+='</div>';
+  document.getElementById('cal-grid').innerHTML=html;
+}
+
+function showPopup(e,dateStr){
+  const r=records.find(rec=>rec.date===dateStr);
+  if(!r) return;
+  const today=new Date(); today.setHours(0,0,0,0);
+  const isFuture=new Date(dateStr+'T12:00:00')>today;
+  const popup=document.getElementById('cal-popup');
+  const hasSessions=(r.progs||[]).some(p=>p.session);
+  let progsHtml='';
+  if(hasSessions){
+    ['前半','後半'].forEach(s=>{
+      const sp=(r.progs||[]).filter(p=>p.session===s);
+      if(!sp.length) return;
+      progsHtml+=`<div class="cal-popup-session">${s}</div>`;
+      progsHtml+=sp.map(p=>`<div class="cal-popup-prog">
+        <span class="cal-popup-badge ${p.type==='katarite'?'badge-k':'badge-e'}">${p.type==='katarite'?'おはなし':'絵本'}</span>
+        <div class="cal-popup-body"><div class="cal-popup-title">${p.title}</div>
+        ${p.reader?`<div class="cal-popup-reader">${p.reader}</div>`:''}</div></div>`).join('');
+    });
+  } else {
+    progsHtml=(r.progs||[]).map(p=>`<div class="cal-popup-prog">
+      <span class="cal-popup-badge ${p.type==='katarite'?'badge-k':'badge-e'}">${p.type==='katarite'?'おはなし':'絵本'}</span>
+      <div class="cal-popup-body"><div class="cal-popup-title">${p.title}</div>
+      ${p.reader?`<div class="cal-popup-reader">${p.reader}</div>`:''}</div></div>`).join('');
+  }
+  popup.innerHTML=`<div class="cal-popup-head">第${r.num}回　${fmtDate(dateStr)}（${SHORT[r.dow]}）${isFuture?' ／ 実施予定':''}</div>${progsHtml}`;
+  popup.classList.add('show');
+  const rect=e.target.closest('.cal-day').getBoundingClientRect();
+  let left=rect.right+8, top=rect.top;
+  if(left+290>window.innerWidth) left=rect.left-298;
+  if(top+320>window.innerHeight) top=window.innerHeight-328;
+  popup.style.left=left+'px';
+  popup.style.top=Math.max(8,top)+'px';
+}
+
+function hidePopup(){
+  document.getElementById('cal-popup').classList.remove('show');
+}
+
+function renderAll(){
+  const today = new Date(); today.setHours(0,0,0,0);
+  const doneCount = records.filter(r=>new Date(r.date+'T12:00:00')<=today).length;
+  const m = today.getMonth()+1;
+  const d = today.getDate();
+  document.getElementById('hcount').textContent = `${m}月${d}日現在`;
+  initCalYear();
+  renderDow(); renderNum(); renderSrch(); renderCal();
+}
+
+function renderDow(){
+  document.getElementById('dow-grid').innerHTML = EIGYO.map(d=>{
+    const recs = records.filter(r=>r.dow===d).sort((a,b)=>b.num-a.num);
+    const katarites = recs.flatMap(r=>(r.progs||[]).filter(p=>p.type==='katarite').map(p=>({...p,num:r.num,date:r.date})));
+    const ehons = recs.flatMap(r=>(r.progs||[]).filter(p=>p.type==='ehon').map(p=>({...p,num:r.num,date:r.date})));
+    const dedup = items => {
+      const seen = new Set();
+      return items.filter(p=>{ const k=p.date+p.title; return seen.has(k)?false:seen.add(k); });
+    };
+    const today = new Date(); today.setHours(0,0,0,0);
+    const mkList = (items) => dedup(items).length
+      ? dedup(items).map(p=>{
+          const d = new Date(p.date+'T12:00:00');
+          const future = d > today;
+          return `<div class="dow-title-item" style="${future?'color:var(--border)':''}">${p.title}</div>`;
+        }).join('')
+      : `<div class="dow-empty">まだなし</div>`;
+    return `<div class="dow-day-block">
+      <div class="dow-day-label">${SHORT[d]}曜日</div>
+      <div class="dow-col">
+        <div class="dow-head ${katarites.length?'has-k':''}">おはなし</div>
+        <div class="dow-body">${mkList(katarites)}</div>
+      </div>
+      <div class="dow-col">
+        <div class="dow-head ${ehons.length?'has-e':''}">絵本</div>
+        <div class="dow-body">${mkList(ehons)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderNum(){
+  const dow = document.getElementById('num-dow').value;
+  const type = document.getElementById('num-type').value;
+  let list = sorted().filter(r=>(!dow||r.dow===dow));
+  if(type) list = list.filter(r=>(r.progs||[]).some(p=>p.type===type));
+  const el = document.getElementById('num-list');
+  if(!list.length){ el.innerHTML='<div class="empty">該当する記録がありません</div>'; return; }
+  el.innerHTML = list.map(r=>{
+    const today = new Date(); today.setHours(0,0,0,0);
+    const isFuture = new Date(r.date+'T12:00:00') > today;
+    const progs = type ? (r.progs||[]).filter(p=>p.type===type) : (r.progs||[]);
+    const hasSessions = progs.some(p=>p.session);
+    let progsHtml = '';
+    if(isFuture){
+      progsHtml = hasSessions ? (() => {
+        let h = '';
+        ['前半','後半'].forEach(s=>{
+          const sp = progs.filter(p=>p.session===s);
+          if(!sp.length) return;
+          h += `<div style="font-size:11px;color:var(--muted);margin:8px 0 4px;padding-bottom:3px;border-bottom:1px solid var(--border)">${s}</div>`;
+          h += sp.map(p=>`
+            <div class="num-prog">
+              <span class="num-prog-badge ${p.type==='katarite'?'badge-k':'badge-e'}">${p.type==='katarite'?'おはなし':'絵本'}</span>
+              <div class="num-prog-body">
+                <div class="num-prog-title">${p.title}</div>
+                ${creditStr(p)?`<div class="num-prog-credit">${creditStr(p)}</div>`:''}
+                ${p.reader?`<div class="num-prog-reader">${p.reader}</div>`:''}
+              </div>
+            </div>`).join('');
+        });
+        return h;
+      })() : progs.map(p=>`
+        <div class="num-prog">
+          <span class="num-prog-badge ${p.type==='katarite'?'badge-k':'badge-e'}">${p.type==='katarite'?'おはなし':'絵本'}</span>
+          <div class="num-prog-body">
+            <div class="num-prog-title">${p.title}</div>
+            ${creditStr(p)?`<div class="num-prog-credit">${creditStr(p)}</div>`:''}
+            ${p.reader?`<div class="num-prog-reader">${p.reader}</div>`:''}
+          </div>
+        </div>`).join('');
+    } else if(hasSessions){
+      ['前半','後半'].forEach(s=>{
+        const sp = progs.filter(p=>p.session===s);
+        if(!sp.length) return;
+        progsHtml += `<div style="font-size:11px;color:var(--muted);margin:8px 0 4px;padding-bottom:3px;border-bottom:1px solid var(--border)">${s}</div>`;
+        progsHtml += sp.map(p=>`
+          <div class="num-prog">
+            <span class="num-prog-badge ${p.type==='katarite'?'badge-k':'badge-e'}">${p.type==='katarite'?'おはなし':'絵本'}</span>
+            <div class="num-prog-body">
+              <div class="num-prog-title">${p.title}</div>
+              ${creditStr(p)?`<div class="num-prog-credit">${creditStr(p)}</div>`:''}
+              ${p.reader?`<div class="num-prog-reader">${p.reader}</div>`:''}
+            </div>
+          </div>`).join('');
+      });
+    } else {
+      progsHtml = progs.map(p=>`
+        <div class="num-prog">
+          <span class="num-prog-badge ${p.type==='katarite'?'badge-k':'badge-e'}">${p.type==='katarite'?'おはなし':'絵本'}</span>
+          <div class="num-prog-body">
+            <div class="num-prog-title">${p.title}</div>
+            ${creditStr(p)?`<div class="num-prog-credit">${creditStr(p)}</div>`:''}
+            ${p.reader?`<div class="num-prog-reader">${p.reader}</div>`:''}
+          </div>
+        </div>`).join('');
+    }
+    return `<div class="num-item">
+      <div class="num-head" style="${isFuture?'background:#d5cfc8':''}">
+        <span class="num-badge">第${r.num}回</span>
+        <span class="num-date">${fmtDate(r.date)}</span>
+        <span class="num-dow">${SHORT[r.dow]}曜日</span>
+        ${isFuture?'<span style="font-size:11px;color:#fff;font-style:italic">実施予定</span>':''}
+      </div>
+      <div class="num-body">${progsHtml}</div>
+    </div>`;
+  }).join('');
+}
+
+function hl(t,q){ if(!q||!t) return t||''; return t.replace(new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'),m=>`<span class="hl">${m}</span>`); }
+
+function renderSrch(){
+  const q = document.getElementById('srch-q').value.trim().toLowerCase();
+  const dow = document.getElementById('srch-dow').value;
+  const type = document.getElementById('srch-type').value;
+  const rows = [];
+  sorted().forEach(r=>{
+    if(dow && r.dow!==dow) return;
+    (r.progs||[]).forEach(p=>{
+      if(type && p.type!==type) return;
+      if(q && !`${p.title} ${p.author} ${p.translator} ${p.illustrator} ${p.reader} ${p.source}`.toLowerCase().includes(q)) return;
+      rows.push({r, p});
+    });
+  });
+  document.getElementById('srch-label').textContent = `${rows.length}件`;
+  const el = document.getElementById('srch-list');
+  if(!rows.length){ el.innerHTML=`<tr><td colspan="10" class="empty">見つかりませんでした</td></tr>`; return; }
+  const today2 = new Date(); today2.setHours(0,0,0,0);
+  el.innerHTML = rows.map(({r,p})=>{
+    const isFuture = new Date(r.date+'T12:00:00') > today2;
+    return `<tr class="${isFuture?'future':''}">
+    <td class="tbl-num">${r.num}</td>
+    <td class="tbl-date">${fmtDateSlash(r.date)}</td>
+    <td class="tbl-date">${SHORT[r.dow]}</td>
+    <td class="tbl-credit">${TYPE_LABEL[p.type]}</td>
+    <td class="tbl-title">${hl(p.title,q)}</td>
+    <td class="tbl-credit">${hl(p.source||'',q)}</td>
+    <td class="tbl-credit">${hl(p.author||'',q)}</td>
+    <td class="tbl-credit">${hl(p.translator||'',q)}</td>
+    <td class="tbl-credit">${hl(p.illustrator||'',q)}</td>
+    <td class="tbl-reader">${p.reader?hl(formalName(p.reader),q):''}</td>
+  </tr>`;
+  }).join('');
+}
+
+renderAll();
+</script>
+</body>
+</html>
