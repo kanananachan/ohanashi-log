@@ -435,10 +435,11 @@ function renderCal(){
   const byDate = {};
   records.forEach(r=>{ if(r.date.startsWith(year)) byDate[r.date]=r; });
   const MNAMES=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
-  const DNAMES=['日','月','火','水','木','金','土'];
+  const DNAMES=['月','火','水','木','金','土','日'];
   let html='<div class="cal-grid">';
   for(let m=0;m<12;m++){
-    const firstDay=new Date(year,m,1).getDay();
+    const firstDow=new Date(year,m,1).getDay();
+    const firstDay=(firstDow===0)?6:firstDow-1;
     const daysInMonth=new Date(year,m+1,0).getDate();
     let cells='';
     for(let i=0;i<firstDay;i++) cells+=`<div class="cal-day empty"></div>`;
@@ -450,14 +451,16 @@ function renderCal(){
       const isFuture=dt>today;
       const rec=byDate[ds];
       const numClass=dow===0?'sun':dow===6?'sat':'';
-      cells+=`<div class="cal-day${isToday?' today':''}${rec?' has-event':''}" ${rec?`onmouseenter="showPopup(event,'${ds}')" onmouseleave="hidePopup()" onclick="jumpToNum('${ds}')"`:''}>
+      const isPast = dt < today;
+      const bgColor = rec ? (isFuture?'#fff8ee':'#e8e4dc') : isPast ? '#f1efe8' : '';
+      cells+=`<div class="cal-day${isToday?' today':''}${rec?' has-event':''}" ${(rec||isPast)?`style="background:${bgColor}"`:''} ${rec?`onmouseenter="showPopup(event,'${ds}')" onmouseleave="hidePopup()" onclick="jumpToNum('${ds}')"`:''}>
         <div class="cal-day-num ${numClass}">${d}</div>
-        ${rec?`<div class="cal-dot ${isFuture?'future':'done'}"></div><div style="font-size:8px;text-align:center;color:${isFuture?'#8a6020':'#888780'};margin-top:1px">第${rec.num}回</div>`:''}
+        ${rec?`<div class="cal-dot ${isFuture?'future':'done'}"></div><div style="font-size:8px;text-align:center;color:${isFuture?'#8a6020':'#5f5e5a'};margin-top:1px">第${rec.num}回</div>`:''}
       </div>`;
     }
     html+=`<div class="cal-month">
       <div class="cal-month-head">${MNAMES[m]}</div>
-      <div class="cal-dow-row">${DNAMES.map((n,i)=>`<div class="cal-dow-cell${i===0?' sun':i===6?' sat':''}">${n}</div>`).join('')}</div>
+      <div class="cal-dow-row">${DNAMES.map((n,i)=>`<div class="cal-dow-cell${i===6?' sun':i===5?' sat':''}">${n}</div>`).join('')}</div>
       <div class="cal-days">${cells}</div>
     </div>`;
   }
