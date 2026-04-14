@@ -214,7 +214,7 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
 .cal-day-num.sun { color: #c0392b; }
 .cal-day-num.sat { color: #2980b9; }
 .cal-dot { width: 6px; height: 6px; border-radius: 50%; margin: 2px auto 0; }
-.cal-dot.done { background: #7a9e7e; }
+.cal-dot.done { background: #b4b2a9; }
 .cal-dot.future { background: #e8c87a; }
 .cal-day.has-event { cursor: pointer; }
 .cal-day.has-event:hover { background: var(--paper2); }
@@ -452,7 +452,7 @@ function renderCal(){
       const numClass=dow===0?'sun':dow===6?'sat':'';
       cells+=`<div class="cal-day${isToday?' today':''}${rec?' has-event':''}" ${rec?`onmouseenter="showPopup(event,'${ds}')" onmouseleave="hidePopup()" onclick="jumpToNum('${ds}')"`:''}>
         <div class="cal-day-num ${numClass}">${d}</div>
-        ${rec?`<div class="cal-dot ${isFuture?'future':'done'}"></div><div style="font-size:8px;text-align:center;color:${isFuture?'#8a6020':'#3d6b41'};margin-top:1px">第${rec.num}回</div>`:''}
+        ${rec?`<div class="cal-dot ${isFuture?'future':'done'}"></div><div style="font-size:8px;text-align:center;color:${isFuture?'#8a6020':'#888780'};margin-top:1px">第${rec.num}回</div>`:''}
       </div>`;
     }
     html+=`<div class="cal-month">
@@ -629,12 +629,12 @@ function renderNum(){
         </div>`).join('');
     }
     return `<div class="num-item" id="rec-${r.date}">
-      <div class="num-head" style="${isFuture?'background:#d5cfc8':''}">
+      <div class="num-head" style="${isFuture?'background:#faeeda':'background:#d5cfc8'}">
         <span class="num-badge">第${r.num}回</span>
         <span class="num-date">${fmtDate(r.date)}</span>
         <span class="num-dow">${SHORT[r.dow]}曜日</span>
         ${r.times?`<span style="font-size:11px;color:var(--muted)">${r.times.join('　')}</span>`:''}
-        ${isFuture?'<span style="font-size:11px;color:#fff;font-style:italic">実施予定</span>':''}
+        ${isFuture?'<span style="font-size:11px;color:#633806;font-style:italic">実施予定</span>':''}
       </div>
       <div class="num-body">${progsHtml}</div>
     </div>`;
