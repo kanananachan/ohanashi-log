@@ -338,7 +338,7 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
       </select>
     </div>
     <div id="srch-label" class="reslabel"></div>
-    <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">※「話し手」はまるちゃん・かなえちゃんなどのプレクラネームでも検索できます</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">※「話し手」は漢字名でもプレクラネームでも検索できます</div>
     <div class="tbl-wrap">
       <table class="srch-tbl">
         <thead>
@@ -659,7 +659,7 @@ function renderSrch(){
       if(seen.has(key)) return;
       seen.add(key);
       if(type && p.type!==type) return;
-      if(q && !`${p.title} ${p.author} ${p.translator} ${p.illustrator} ${p.reader} ${p.source}`.toLowerCase().includes(q)) return;
+      if(q && !`${p.title} ${p.author} ${p.translator} ${p.illustrator} ${p.reader} ${p.source} ${formalName(p.reader)}`.toLowerCase().includes(q)) return;
       rows.push({r, p});
     });
   });
