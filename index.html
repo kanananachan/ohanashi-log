@@ -248,6 +248,39 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
   font-size: 11px;
   color: var(--border);
 }
+
+/* スマホ対応 */
+@media (max-width: 640px) {
+  .header { padding: 0.75rem 1rem; }
+  .header-title { font-size: 17px; }
+  .nav { padding: 0.5rem 0.75rem; gap: 6px; }
+  .navbtn { padding: 5px 10px; font-size: 11px; }
+  .main { padding: 0.75rem 0.75rem; }
+
+  /* 曜日ビュー：3列→縦1列 */
+  .dow-grid { grid-template-columns: 1fr; gap: 20px; }
+
+  /* 開催情報 */
+  .num-head { flex-wrap: wrap; gap: 4px; }
+  .num-badge { font-size: 11px; }
+  .num-date { font-size: 12px; }
+
+  /* カレンダー：3列→2列 */
+  .cal-grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; }
+  .cal-month-head { font-size: 12px; padding: 5px 8px; }
+  .cal-day { min-height: 28px; }
+  .cal-day-num { font-size: 9px; }
+  .cal-popup { width: calc(100vw - 32px); left: 16px !important; }
+
+  /* テーブル：カード形式に */
+  .tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table.srch-tbl { font-size: 11px; table-layout: auto; }
+  table.srch-tbl th, table.srch-tbl td { padding: 5px 6px; }
+
+  /* ctrl絞り込み */
+  .ctrl { gap: 6px; }
+  .ctrl select, .ctrl input { font-size: 12px; padding: 5px 8px; }
+}
 </style>
 </head>
 <body>
@@ -469,11 +502,19 @@ function showPopup(e,dateStr){
   popup.innerHTML=`<div class="cal-popup-head">第${r.num}回　${fmtDate(dateStr)}（${SHORT[r.dow]}）${r.times?'　'+r.times.join('／'):''}${isFuture?'　<span style="font-size:9px;background:#d5cfc8;color:#5f5e5a;padding:1px 6px;border-radius:10px;font-style:normal">未実施</span>':''}</div>${progsHtml}`;
   popup.classList.add('show');
   const rect=e.target.closest('.cal-day').getBoundingClientRect();
-  let left=rect.right+8, top=rect.top;
-  if(left+300>window.innerWidth) left=rect.left-308;
-  if(top+320>window.innerHeight) top=window.innerHeight-328;
-  popup.style.left=left+'px';
-  popup.style.top=Math.max(8,top)+'px';
+  const isMobile = window.innerWidth <= 640;
+  if(isMobile){
+    popup.style.left = '16px';
+    popup.style.top = Math.max(8, rect.top - 10) + 'px';
+    popup.style.width = (window.innerWidth - 32) + 'px';
+  } else {
+    let left=rect.right+8, top=rect.top;
+    if(left+300>window.innerWidth) left=rect.left-308;
+    if(top+320>window.innerHeight) top=window.innerHeight-328;
+    popup.style.left=left+'px';
+    popup.style.top=Math.max(8,top)+'px';
+    popup.style.width='300px';
+  }
 }
 
 function hidePopup(){
