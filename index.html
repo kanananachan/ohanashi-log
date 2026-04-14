@@ -206,9 +206,9 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
 .cal-dow-cell.sun { color: #c0392b; }
 .cal-dow-cell.sat { color: #2980b9; }
 .cal-days { display: grid; grid-template-columns: repeat(7, 1fr); }
-.cal-day { min-height: 36px; border-right: 0.5px solid #c8bfb4; border-bottom: 0.5px solid #c8bfb4; padding: 3px 2px; font-size: 10px; position: relative; }
+.cal-day { min-height: 36px; border-right: 0.5px solid var(--border); border-bottom: 0.5px solid var(--border); padding: 3px 2px; font-size: 10px; position: relative; }
 .cal-day:nth-child(7n) { border-right: none; }
-.cal-day.empty { background: #e0d8ce; }.cal-day.today .cal-day-num { background: var(--brown); color: #fff; border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; }
+.cal-day.empty { background: #ddd5c8; }.cal-day.today .cal-day-num { background: var(--brown); color: #fff; border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; }
 .cal-day-num { font-size: 10px; color: var(--muted); line-height: 1.6; text-align: center; }
 .cal-day-num.sun { color: #c0392b; }
 .cal-day-num.sat { color: #2980b9; }
@@ -452,7 +452,7 @@ function renderCal(){
       const numClass=dow===0?'sun':dow===6?'sat':'';
       const isPast = dt < today;
       const bgColor = isFuture && rec ? '#fff8ee' : isPast || (!isFuture && !isToday) ? 'var(--paper)' : '';
-      cells+=`<div class="cal-day${isToday?' today':''}${rec?' has-event':''}" style="background:${isPast?'#e0d8ce':rec&&isFuture?'#fff8ee':''}" ${rec?`onmouseenter="showPopup(event,'${ds}')" onmouseleave="hidePopup()" onclick="jumpToNum('${ds}')"`:''}>
+      cells+=`<div class="cal-day${isToday?' today':''}${rec?' has-event':''}" style="background:${isPast?'#ddd5c8':rec&&isFuture?'#fff8ee':''}" ${rec?`onmouseenter="showPopup(event,'${ds}')" onmouseleave="hidePopup()" onclick="jumpToNum('${ds}')"`:''}>
         <div class="cal-day-num ${numClass}">${d}</div>
         ${rec?`<div class="cal-dot ${isFuture?'future':'done'}"></div><div style="font-size:8px;text-align:center;color:${isFuture?'#8a6020':'#5f5e5a'};margin-top:1px">第${rec.num}回</div>`:''}
       </div>`;
