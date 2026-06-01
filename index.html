@@ -329,7 +329,7 @@ const TYPE_LABEL = {katarite:'おはなし', ehon:'絵本', teasobi:'てあそ�
 const TYPE_CLASS = {katarite:'badge-k', ehon:'badge-e', teasobi:'badge-t'};
 const EIGYO_DOW = new Set([3, 4, 5]); // 水=3 木=4 金=5
 
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbwOeVKFFlEzOiKWz7rmvbmIh8tM6UWeqd-DOsPo2mBe0ZP4jcE_eSqZ9aw2awZRaUvb/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyutBGzv_lc5b_OUf8q2kSM01-m6o7QkBry9hmD_bAnNqbTlfhgjHbKuuUbBihfLORw/exec';
 let records = [];
 
 async function loadFromSheet(){
@@ -613,14 +613,10 @@ async function saveRecord(){
   btn.textContent='保存中…';
 
   try {
-    await fetch(GAS_URL,{
-      method:'POST',
-      mode:'no-cors',
-      headers:{'Content-Type':'text/plain'},
-      body:JSON.stringify({action:'upsert',record})
-    });
+    const params = new URLSearchParams({action:'upsert', data:JSON.stringify(record)});
+    await fetch(GAS_URL + '?' + params.toString());
   } catch(e){
-    console.warn('GAS POST失敗:',e);
+    console.warn('GAS保存失敗:',e);
   }
 
   const idx=records.findIndex(r=>r.date===dateStr);
