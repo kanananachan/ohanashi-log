@@ -830,23 +830,42 @@ async function searchBook(id, title){
   const sugg = document.getElementById('bsugg-'+id);
   if(!status||!sugg) return;
   status.style.display='block';
+  sugg.style.display='none';
   try {
     const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(title)}&langRestrict=ja&maxResults=6&printType=books`);
     const data = await res.json();
     status.style.display='none';
     const items = data.items||[];
-    if(!items.length){ sugg.style.display='none'; return; }
-    sugg.innerHTML = items.slice(0,5).map((item,i)=>{
-      const v = item.volumeInfo||{};
-      const authors = (v.authors||[]).join('、');
-      return `<button class="book-suggestion-item" onclick="applyBook(${id},${i})" type="button">
-        <strong>${v.title||''}</strong>　<span style="color:var(--muted)">${authors}</span></button>`;
-    }).join('');
+    if(!items.length) return;
+
+    // 1件目を自動入力
+    fillBookInfo(id, items[0]);
+
+    // 他の候補も表示（違う場合に選び直せるよう）
     sugg._books = items.slice(0,5);
+    sugg.innerHTML = '<div style="font-size:10px;color:var(--muted);padding:5px 10px 3px">違う場合は選び直してください：</div>'
+      + items.slice(0,5).map((item,i)=>{
+        const v = item.volumeInfo||{};
+        const authors = (v.authors||[]).join('、');
+        return `<button class="book-suggestion-item" onclick="applyBook(${id},${i})" type="button">
+          <strong>${v.title||''}</strong>　<span style="color:var(--muted)">${authors}</span></button>`;
+      }).join('');
     sugg.style.display='block';
   } catch(e){
     status.style.display='none';
+    console.warn('書籍検索エラー:', e);
   }
+}
+
+function fillBookInfo(id, item){
+  if(!item) return;
+  const v = item.volumeInfo||{};
+  const row = document.getElementById('prow-'+id);
+  if(!row) return;
+  const authors = v.authors||[];
+  if(authors.length >= 1) row.querySelector('.prog-author').value = authors[0];
+  if(authors.length >= 2) row.querySelector('.prog-illustrator').value = authors[1];
+  if(authors.length >= 3) row.querySelector('.prog-translator').value = authors[2];
 }
 
 function applyBook(id, idx){
@@ -856,18 +875,11 @@ function applyBook(id, idx){
   const v = item.volumeInfo||{};
   const row = document.getElementById('prow-'+id);
   if(v.title) row.querySelector('.prog-title').value = v.title;
-  // Google Books の authors 配列から役割を推定
-  const authors = v.authors||[];
-  const desc = (v.description||'') + (v.subtitle||'');
-  // 著者・訳・絵を振り分け（簡易ルール）
-  if(authors.length >= 1) row.querySelector('.prog-author').value = authors[0];
-  if(authors.length >= 2){
-    // 2人目以降は訳または絵として候補表示
-    row.querySelector('.prog-illustrator').value = authors[1]||'';
-  }
-  if(authors.length >= 3){
-    row.querySelector('.prog-translator').value = authors[2]||'';
-  }
+  // フィールドをリセットしてから入力
+  row.querySelector('.prog-author').value = '';
+  row.querySelector('.prog-illustrator').value = '';
+  row.querySelector('.prog-translator').value = '';
+  fillBookInfo(id, item);
   sugg.style.display='none';
 }
 
