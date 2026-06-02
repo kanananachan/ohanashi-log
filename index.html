@@ -597,14 +597,14 @@ function showPopup(e,dateStr){
       progsHtml+=`<div class="cal-popup-session">${s}</div>`;
       progsHtml+=sp.map(p=>`<div class="cal-popup-prog">
         <span class="cal-popup-badge ${TYPE_CLASS[p.type]||'badge-k'}">${TYPE_LABEL[p.type]||p.type}</span>
-        <div class="cal-popup-body"><div class="cal-popup-title">${p.title}</div>
-        ${p.reader?`<div class="cal-popup-reader">${p.reader}</div>`:''}</div></div>`).join('');
+        <div class="cal-popup-body"><div class="cal-popup-title" style="${p.tba?'color:var(--muted);font-style:italic':''}">${p.tba?'（未定）':p.title}</div>
+        ${!p.tba&&p.reader?`<div class="cal-popup-reader">${p.reader}</div>`:''}</div></div>`).join('');
     });
   } else {
     progsHtml=(r.progs||[]).map(p=>`<div class="cal-popup-prog">
       <span class="cal-popup-badge ${TYPE_CLASS[p.type]||'badge-k'}">${TYPE_LABEL[p.type]||p.type}</span>
-      <div class="cal-popup-body"><div class="cal-popup-title">${p.title}</div>
-      ${p.reader?`<div class="cal-popup-reader">${p.reader}</div>`:''}</div></div>`).join('');
+      <div class="cal-popup-body"><div class="cal-popup-title" style="${p.tba?'color:var(--muted);font-style:italic':''}">${p.tba?'（未定）':p.title}</div>
+      ${!p.tba&&p.reader?`<div class="cal-popup-reader">${p.reader}</div>`:''}</div></div>`).join('');
   }
   popup.innerHTML=`<div class="cal-popup-head">第${r.num}回　${fmtDate(dateStr)}（${SHORT[r.dow]}）${r.times?'　'+r.times.join('／'):''}${isFuture?'　<span style="font-size:9px;background:#d5cfc8;color:#5f5e5a;padding:1px 6px;border-radius:10px">未実施</span>':''}</div>${progsHtml}<div class="cal-edit-hint">クリックして編集</div>`;
   popup.classList.add('show');
@@ -1054,9 +1054,11 @@ function renderNum(){
     const mkProg=p=>`<div class="num-prog">
       <span class="num-prog-badge ${TYPE_CLASS[p.type]||'badge-k'}">${TYPE_LABEL[p.type]||p.type}</span>
       <div class="num-prog-body">
-        <div class="num-prog-title">${p.title}</div>
-        ${p.type!=='teasobi'&&creditStr(p)?`<div class="num-prog-credit">${creditStr(p)}</div>`:''}
-        ${p.reader?`<div class="num-prog-reader">${p.reader}</div>`:''}
+        <div class="num-prog-title" style="${p.tba?'color:var(--muted);font-style:italic':''}">
+          ${p.tba?'（未定）':p.title}
+        </div>
+        ${!p.tba&&p.type!=='teasobi'&&creditStr(p)?`<div class="num-prog-credit">${creditStr(p)}</div>`:''}
+        ${!p.tba&&p.reader?`<div class="num-prog-reader">${p.reader}</div>`:''}
       </div></div>`;
     let progsHtml='';
     if(hasSessions){
