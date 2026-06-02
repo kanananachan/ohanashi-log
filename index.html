@@ -775,7 +775,8 @@ async function saveRecord(){
 // ── TODO ──────────────────────────────────────────────
 const TODO_KEY = 'ohanashi-todos';
 // 担当者ごとの色
-const READER_COLORS = ['#7a9e7e','#5b7fa6','#c07a2a','#a06080','#6aabb0','#b07a40','#8a8a5a'];
+// まるちゃん, かなえちゃん, そねちゃん, ちゃこさん, しーちゃん, おりちゃん, おおさん
+const READER_COLORS = ['#e8822a','#e06090','#5bbcd0','#1a3a6b','#7ecb35','#b07a40','#f0c030'];
 
 function loadTodos(){ try{ return JSON.parse(localStorage.getItem(TODO_KEY)||'[]'); }catch(e){ return []; } }
 function saveTodos(todos){ localStorage.setItem(TODO_KEY, JSON.stringify(todos)); }
