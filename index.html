@@ -413,15 +413,8 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
         </div>
       </div>
 
-      <!-- ミニカレンダー -->
-      <div class="dash-mini-cal">
-        <div class="dash-mini-cal-head" id="dash-mini-cal-head"></div>
-        <div class="dash-mini-dow">
-          <span>月</span><span>火</span><span>水</span><span>木</span><span>金</span>
-          <span style="color:#2980b9">土</span><span style="color:#c0392b">日</span>
-        </div>
-        <div class="dash-mini-days" id="dash-mini-days"></div>
-      </div>
+      <!-- ミニカレンダー（年間カレンダーと同じスタイル・今月分） -->
+      <div id="dash-mini-cal-wrap"></div>
     </div>
   </div>
 
@@ -582,71 +575,63 @@ function changeCalYear(diff){
   renderCal();
 }
 
-function renderCal(){
-  const year = _calYear;
+// 1ヶ月分のカレンダーHTMLを生成（年間・ダッシュボード共用）
+function buildMonthHtml(year, m, byDate){
   const today=new Date(); today.setHours(0,0,0,0);
-  const byDate={};
-  records.forEach(r=>{ if(r.date.startsWith(year)) byDate[r.date]=r; });
   const MNAMES=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
   const DNAMES=['月','火','水','木','金','土','日'];
-  let html='<div class="cal-grid">';
-  for(let m=0;m<12;m++){
-    const firstDow=new Date(year,m,1).getDay();
-    const firstDay=firstDow===0?6:firstDow-1;
-    const daysInMonth=new Date(year,m+1,0).getDate();
-    let cells='';
-    for(let i=0;i<firstDay;i++) cells+=`<div class="cal-day blank"></div>`;
-    for(let d=1;d<=daysInMonth;d++){
-      const ds=`${year}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-      const dt=new Date(year,m,d);
-      const dow=dt.getDay();
-      const isToday=dt.getTime()===today.getTime();
-      const isFuture=dt>today;
-      const isPast=dt<today;
-      const rec=byDate[ds];
-      const numCls=dow===0?'sun':dow===6?'sat':'';
-      const isEigyo=EIGYO_DOW.has(dow);
+  const firstDow=new Date(year,m,1).getDay();
+  const firstDay=firstDow===0?6:firstDow-1;
+  const daysInMonth=new Date(year,m+1,0).getDate();
+  let cells='';
+  for(let i=0;i<firstDay;i++) cells+=`<div class="cal-day blank"></div>`;
+  for(let d=1;d<=daysInMonth;d++){
+    const ds=`${year}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dt=new Date(year,m,d);
+    const dow=dt.getDay();
+    const isToday=dt.getTime()===today.getTime();
+    const isFuture=dt>today;
+    const isPast=dt<today;
+    const rec=byDate[ds];
+    const numCls=dow===0?'sun':dow===6?'sat':'';
 
-      let cls='cal-day';
-      if(isToday) cls+=' today';
-      if(rec){
-        cls+=' has-event';
-        if(isPast) cls+=' past-done';
-      } else {
-        cls+=' clickable';
-      }
+    let cls='cal-day';
+    if(isToday) cls+=' today';
+    if(rec){ cls+=' has-event'; if(isPast) cls+=' past-done'; }
+    else { cls+=' clickable'; }
 
-      const isKyugyo = KYUGYO.has(ds);
-      const isKyugyoKari = KYUGYO_KARI.has(ds);
+    const isKyugyo=KYUGYO.has(ds);
+    const isKyugyoKari=KYUGYO_KARI.has(ds);
+    let bg='';
+    if(isKyugyo) bg='background:#fdecea;';
+    else if(isKyugyoKari) bg='background:#fff4ec;';
+    else if(rec&&isFuture) bg='background:#fff8ee;';
+    else if(isPast) bg='background:#f8f4ef;';
 
-      let bg='';
-      if(isKyugyo) bg='background:#fdecea;';
-      else if(isKyugyoKari) bg='background:#fff4ec;';
-      else if(rec&&isFuture) bg='background:#fff8ee;';
-      else if(isPast) bg='background:#f8f4ef;';
+    let inner=`<div class="cal-day-num ${numCls}">${d}</div>`;
+    if(rec) inner+=`<div class="cal-dot ${isFuture?'future':'done'}"></div><div style="font-size:8px;text-align:center;color:${isFuture?'#8a6020':'#5f5e5a'};margin-top:1px">第${rec.num}回</div>`;
+    if(isKyugyo) inner+=`<div class="cal-kyugyo">休業</div>`;
+    else if(isKyugyoKari) inner+=`<div class="cal-kyugyo cal-kyugyo-kari">休業(仮)</div>`;
 
-      let inner=`<div class="cal-day-num ${numCls}">${d}</div>`;
-      if(rec){
-        inner+=`<div class="cal-dot ${isFuture?'future':'done'}"></div><div style="font-size:8px;text-align:center;color:${isFuture?'#8a6020':'#5f5e5a'};margin-top:1px">第${rec.num}回</div>`;
-      }
-      if(isKyugyo) inner+=`<div class="cal-kyugyo">休業</div>`;
-      else if(isKyugyoKari) inner+=`<div class="cal-kyugyo cal-kyugyo-kari">休業(仮)</div>`;
+    let handlers='';
+    if(rec) handlers=`onmouseenter="showPopup(event,'${ds}')" onmouseleave="hidePopup()" onclick="openEditModal('${ds}')"`;
+    else handlers=`onclick="openNewModal('${ds}')"`;
 
-      let handlers='';
-      if(rec){
-        handlers=`onmouseenter="showPopup(event,'${ds}')" onmouseleave="hidePopup()" onclick="openEditModal('${ds}')"`;
-      } else {
-        handlers=`onclick="openNewModal('${ds}')"`;
-      }
-
-      cells+=`<div class="${cls}" style="${bg}" ${handlers}>${inner}</div>`;
-    }
-    html+=`<div class="cal-month">
-      <div class="cal-month-head">${MNAMES[m]}</div>
-      <div class="cal-dow-row">${DNAMES.map((n,i)=>`<div class="cal-dow-cell${i===6?' sun':i===5?' sat':''}">${n}</div>`).join('')}</div>
-      <div class="cal-days">${cells}</div>
-    </div>`;
+    cells+=`<div class="${cls}" style="${bg}" ${handlers}>${inner}</div>`;
   }
+  return `<div class="cal-month">
+    <div class="cal-month-head">${MNAMES[m]}</div>
+    <div class="cal-dow-row">${DNAMES.map((n,i)=>`<div class="cal-dow-cell${i===6?' sun':i===5?' sat':''}">${n}</div>`).join('')}</div>
+    <div class="cal-days">${cells}</div>
+  </div>`;
+}
+
+function renderCal(){
+  const year = _calYear;
+  const byDate={};
+  records.forEach(r=>{ if(r.date.startsWith(year)) byDate[r.date]=r; });
+  let html='<div class="cal-grid">';
+  for(let m=0;m<12;m++) html+=buildMonthHtml(year, m, byDate);
   html+='</div>';
   document.getElementById('cal-grid').innerHTML=html;
 }
@@ -1152,33 +1137,13 @@ function renderDashProgram(){
 }
 
 function renderDashMiniCal(){
-  const headEl = document.getElementById('dash-mini-cal-head');
-  const daysEl = document.getElementById('dash-mini-days');
-  if(!headEl||!daysEl) return;
+  const el = document.getElementById('dash-mini-cal-wrap');
+  if(!el) return;
   const today = new Date(); today.setHours(0,0,0,0);
   const y = today.getFullYear(), m = today.getMonth();
-  headEl.textContent = `${m+1}月`;
-  const firstDay = new Date(y, m, 1).getDay(); // 0=Sun
-  const startBlank = firstDay===0 ? 6 : firstDay-1; // 月始まり
-  const daysInMonth = new Date(y, m+1, 0).getDate();
-  let html = '';
-  for(let i=0;i<startBlank;i++) html += '<div class="dash-mini-day blank"></div>';
-  for(let d=1;d<=daysInMonth;d++){
-    const date = new Date(y,m,d);
-    const ds = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const isToday = date.getTime()===today.getTime();
-    const hasRec = records.some(r=>r.date===ds);
-    const isPast = date < today;
-    const wd = date.getDay();
-    let cls = 'dash-mini-day';
-    if(isToday) cls+=' today';
-    else if(isPast) cls+=' past';
-    if(wd===0) cls+=' sun';
-    if(wd===6) cls+=' sat';
-    if(hasRec&&!isToday) cls+=' has-rec';
-    html += `<div class="${cls}">${d}</div>`;
-  }
-  daysEl.innerHTML = html;
+  const byDate={};
+  records.forEach(r=>{ if(r.date.startsWith(y)) byDate[r.date]=r; });
+  el.innerHTML = buildMonthHtml(y, m, byDate);
 }
 
 function renderDow(){
