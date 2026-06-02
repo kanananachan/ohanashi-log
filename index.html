@@ -104,6 +104,9 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
 .reslabel { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
 
 /* カレンダー */
+.cal-year-btn { background: none; border: 1px solid var(--border); border-radius: 50%; width: 30px; height: 30px; font-size: 13px; cursor: pointer; color: var(--ink); display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+.cal-year-btn:hover { background: var(--paper2); }
+.cal-year-label { font-family: 'Zen Kurenaido', serif; font-size: 22px; color: var(--ink); letter-spacing: 0.08em; min-width: 80px; text-align: center; }
 .cal-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px; }
 .cal-month { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--cream); }
 .cal-month-head { padding: 7px 12px; font-size: 13px; font-weight: 500; color: var(--ink); background: #e8dfd4; border-bottom: 1px solid var(--border); font-family: 'Zen Kurenaido', serif; }
@@ -352,8 +355,10 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
         <button class="todo-add-btn" onclick="addTodo()">追加</button>
       </div>
     </div>
-    <div class="ctrl" style="margin-bottom:1rem">
-      <select id="cal-year" onchange="renderCal()"></select>
+    <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:1.2rem">
+      <button class="cal-year-btn" onclick="changeCalYear(-1)">◀</button>
+      <span class="cal-year-label" id="cal-year-label">2026</span>
+      <button class="cal-year-btn" onclick="changeCalYear(1)">▶</button>
     </div>
     <div id="cal-grid"></div>
   </div>
@@ -479,18 +484,22 @@ function sw(v,btn){
   if(v==='cal') renderCal();
 }
 
+let _calYear = new Date().getFullYear();
+
 function initCalYear(){
-  const years=[...new Set(records.map(r=>r.date.slice(0,4)))].sort();
-  const thisYear=new Date().getFullYear().toString();
-  if(!years.includes(thisYear)) years.push(thisYear);
-  const prev=document.getElementById('cal-year').value;
-  const sel=document.getElementById('cal-year');
-  sel.innerHTML=years.map(y=>`<option>${y}</option>`).join('');
-  sel.value=prev&&years.includes(prev)?prev:thisYear;
+  const thisYear = new Date().getFullYear();
+  if(!_calYear) _calYear = thisYear;
+  document.getElementById('cal-year-label').textContent = _calYear;
+}
+
+function changeCalYear(diff){
+  _calYear += diff;
+  document.getElementById('cal-year-label').textContent = _calYear;
+  renderCal();
 }
 
 function renderCal(){
-  const year=parseInt(document.getElementById('cal-year').value);
+  const year = _calYear;
   const today=new Date(); today.setHours(0,0,0,0);
   const byDate={};
   records.forEach(r=>{ if(r.date.startsWith(year)) byDate[r.date]=r; });
