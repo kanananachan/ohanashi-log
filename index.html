@@ -57,9 +57,10 @@ body {
 /* ── コンテンツ ── */
 .content-wrap { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--cream); }
 
-/* ── タイトルバナー（ダッシュボード右列） ── */
+/* ── タイトルバナー（カード右上・ヘッダー突き抜け） ── */
 .app-title-banner { display: none; }
-.dash-title-img { display: block; width: 100%; height: auto; }
+.dash-title-col { position: absolute; top: -20px; right: 24px; z-index: 20; pointer-events: none; }
+.dash-title-img { display: block; width: 100px; height: auto; }
 
 /* ── ナビ ── */
 .nav { display: flex; gap: 4px; padding: 0.6rem 1.5rem; background: transparent; border-bottom: 1px solid var(--border); overflow-x: auto; align-items: center; }
@@ -72,7 +73,7 @@ body {
 .view.on { display: block; }
 
 /* ── ダッシュボード（カレンダービューのトップ） ── */
-.dashboard { display: grid; grid-template-columns: 1fr 1fr 100px; gap: 32px; margin-bottom: 24px; }
+.dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-bottom: 24px; }
 .dash-left-col { display: flex; flex-direction: column; gap: 16px; }
 .dash-title-col { display: flex; align-items: flex-start; justify-content: center; }
 
