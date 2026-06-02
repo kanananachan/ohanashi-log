@@ -163,6 +163,8 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
 .btn-save { font-size: 13px; padding: 8px 20px; border: none; border-radius: 8px; background: var(--ink); color: var(--cream); cursor: pointer; font-family: 'Noto Sans JP', sans-serif; }
 .btn-save:hover { opacity: 0.85; }
 .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-delete { font-size: 13px; padding: 8px 18px; border: 1px solid #c0392b; border-radius: 8px; background: transparent; color: #c0392b; cursor: pointer; font-family: 'Noto Sans JP', sans-serif; }
+.btn-delete:hover { background: #c0392b; color: #fff; }
 .save-note { font-size: 11px; color: var(--muted); margin-right: auto; align-self: center; }
 
 /* 時間帯チェックボックス */
@@ -289,9 +291,6 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
 
   <!-- 年間カレンダー -->
   <div class="view on" id="v-cal">
-    <div style="font-size:11px;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-      <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--sage-light);border:1px solid #aac;"></span>水・木・金曜日をクリックして記録を入力・編集できます
-    </div>
     <div class="ctrl" style="margin-bottom:1rem">
       <select id="cal-year" onchange="renderCal()"></select>
     </div>
@@ -348,7 +347,8 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
       <div id="prog-rows"></div>
     </div>
     <div class="modal-footer">
-      <span class="save-note">※ スプレッドシートにも保存されます</span>
+      <button class="btn-delete" id="btn-delete" onclick="deleteRecord()" style="display:none">削除する</button>
+      <span style="flex:1"></span>
       <button class="btn-cancel" onclick="closeModal()">キャンセル</button>
       <button class="btn-save" id="btn-save" onclick="saveRecord()">保存する</button>
     </div>
@@ -571,6 +571,7 @@ function _openModal(dateStr,rec,defaultNum){
     if(customTimes.length) document.getElementById('f-times-custom').value=customTimes.join('、');
   }
   document.getElementById('modal-title').textContent=rec?`第${rec.num}回 編集`:'新しい記録を入力';
+  document.getElementById('btn-delete').style.display=rec?'':'none';
   onDateChange();
   document.getElementById('prog-rows').innerHTML='';
   if(rec&&rec.progs&&rec.progs.length){
@@ -638,6 +639,31 @@ function updateProgExtra(id){
   if(!row) return;
   const type=row.querySelector('.prog-type-sel').value;
   document.getElementById('pextra-'+id).classList.toggle('hidden',type==='teasobi');
+}
+
+async function deleteRecord(){
+  const dateStr=document.getElementById('f-date').value;
+  if(!dateStr) return;
+  if(!confirm(`${dateStr} の記録を削除してもよいですか？`)) return;
+
+  const btn=document.getElementById('btn-delete');
+  btn.disabled=true;
+  btn.textContent='削除中…';
+
+  try {
+    const params = new URLSearchParams({action:'delete', date:dateStr});
+    await fetch(GAS_URL + '?' + params.toString());
+  } catch(e){
+    console.warn('GAS削除失敗:',e);
+  }
+
+  const idx=records.findIndex(r=>r.date===dateStr);
+  if(idx>=0) records.splice(idx,1);
+
+  closeModal();
+  renderAll();
+  btn.disabled=false;
+  btn.textContent='削除する';
 }
 
 async function saveRecord(){
@@ -838,23 +864,22 @@ async function searchBook(id, title){
   status.style.display='block';
   sugg.style.display='none';
   try {
-    const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(title)}&langRestrict=ja&maxResults=6&printType=books`);
+    // OpenBD（日本の書籍専用DB）で検索
+    const res = await fetch(`https://api.openbd.jp/v1/search?title=${encodeURIComponent(title)}&limit=6`);
     const data = await res.json();
     status.style.display='none';
-    const items = data.items||[];
-    if(!items.length) return;
+    if(!data||!data.length) return;
 
     // 1件目を自動入力
-    fillBookInfo(id, items[0]);
+    applyOpenBD(id, data[0]);
 
-    // 他の候補も表示（違う場合に選び直せるよう）
-    sugg._books = items.slice(0,5);
-    sugg.innerHTML = '<div style="font-size:10px;color:var(--muted);padding:5px 10px 3px">違う場合は選び直してください：</div>'
-      + items.slice(0,5).map((item,i)=>{
-        const v = item.volumeInfo||{};
-        const authors = (v.authors||[]).join('、');
+    // 他の候補も表示
+    sugg._books = data.slice(0,5);
+    sugg.innerHTML = '<div style="font-size:10px;color:var(--muted);padding:5px 10px 3px">違う場合は選んでください：</div>'
+      + data.slice(0,5).map((book,i)=>{
+        const s = book.summary||{};
         return `<button class="book-suggestion-item" onclick="applyBook(${id},${i})" type="button">
-          <strong>${v.title||''}</strong>　<span style="color:var(--muted)">${authors}</span></button>`;
+          <strong>${s.title||''}</strong>　<span style="color:var(--muted)">${s.author||''}</span></button>`;
       }).join('');
     sugg.style.display='block';
   } catch(e){
@@ -863,29 +888,44 @@ async function searchBook(id, title){
   }
 }
 
-function fillBookInfo(id, item){
-  if(!item) return;
-  const v = item.volumeInfo||{};
+function parseJPAuthor(str){
+  // 例: "中川 李枝子 著；大村 百合子 絵" / "松岡 享子 著・訳"
+  const result={author:'', illustrator:'', translator:''};
+  if(!str) return result;
+  const parts = str.split(/[；;]/);
+  parts.forEach(p=>{
+    const t = p.trim();
+    const name = t.replace(/[\s　]*[著文作絵画訳編]+\s*$/, '').trim();
+    if(!name) return;
+    if(/[絵画]/.test(t)) result.illustrator = result.illustrator||name;
+    else if(/訳/.test(t)) result.translator = result.translator||name;
+    else result.author = result.author||name;
+  });
+  return result;
+}
+
+function applyOpenBD(id, book){
+  if(!book) return;
+  const s = book.summary||{};
   const row = document.getElementById('prow-'+id);
   if(!row) return;
-  const authors = v.authors||[];
-  if(authors.length >= 1) row.querySelector('.prog-author').value = authors[0];
-  if(authors.length >= 2) row.querySelector('.prog-illustrator').value = authors[1];
-  if(authors.length >= 3) row.querySelector('.prog-translator').value = authors[2];
+  if(s.title) row.querySelector('.prog-title').value = s.title;
+  const parsed = parseJPAuthor(s.author||'');
+  row.querySelector('.prog-author').value = parsed.author;
+  row.querySelector('.prog-illustrator').value = parsed.illustrator;
+  row.querySelector('.prog-translator').value = parsed.translator;
 }
 
 function applyBook(id, idx){
   const sugg = document.getElementById('bsugg-'+id);
-  const item = sugg._books && sugg._books[idx];
-  if(!item) return;
-  const v = item.volumeInfo||{};
+  const book = sugg._books && sugg._books[idx];
+  if(!book) return;
   const row = document.getElementById('prow-'+id);
-  if(v.title) row.querySelector('.prog-title').value = v.title;
-  // フィールドをリセットしてから入力
+  if(!row) return;
   row.querySelector('.prog-author').value = '';
   row.querySelector('.prog-illustrator').value = '';
   row.querySelector('.prog-translator').value = '';
-  fillBookInfo(id, item);
+  applyOpenBD(id, book);
   sugg.style.display='none';
 }
 
