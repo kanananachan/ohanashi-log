@@ -38,6 +38,7 @@ body {
 
 /* ── 白いカード ── */
 .app-card {
+  position: relative;
   display: flex;
   width: 100%;
   max-width: 1180px;
@@ -45,7 +46,7 @@ body {
   background: #faf7f2;
   border-radius: 18px;
   box-shadow: 0 8px 48px rgba(0,0,0,0.22), 0 2px 8px rgba(0,0,0,0.1);
-  overflow: hidden;
+  overflow: visible;
   margin: 0 auto;
 }
 
@@ -57,7 +58,7 @@ body {
 .content-wrap { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--cream); }
 
 /* ── タイトルバナー ── */
-.app-title-banner { padding: 20px 24px 12px; }
+.app-title-banner { position: absolute; top: 0; right: 0; z-index: 10; pointer-events: none; }
 .app-title-banner img { display: block; height: auto; width: auto; }
 
 /* ── ナビ ── */
