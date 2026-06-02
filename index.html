@@ -317,7 +317,8 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
 <!-- コンテンツ -->
 <div class="content-wrap">
   <div class="nav">
-    <button class="navbtn on" onclick="sw('cal',this)">年間カレンダー</button>
+    <button class="navbtn on" onclick="sw('top',this)">TOP</button>
+    <button class="navbtn" onclick="sw('cal',this)">年間カレンダー</button>
     <button class="navbtn" onclick="sw('num',this)">開催情報</button>
     <button class="navbtn" onclick="sw('dow',this)">曜日ごと作品</button>
     <button class="navbtn" onclick="sw('srch',this)">データ一覧／検索</button>
@@ -388,9 +389,8 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
     </div>
   </div>
 
-  <!-- 年間カレンダー -->
-  <div class="view on" id="v-cal">
-    <!-- ダッシュボード -->
+  <!-- TOP ダッシュボード -->
+  <div class="view on" id="v-top">
     <div class="dashboard">
       <!-- タスク -->
       <div class="dash-task-panel">
@@ -423,23 +423,25 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
         <div class="dash-mini-days" id="dash-mini-days"></div>
       </div>
     </div>
+  </div>
 
-    <!-- 年間カレンダー本体 -->
+  <!-- 年間カレンダー -->
+  <div class="view" id="v-cal">
     <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:1.2rem">
       <button class="cal-year-btn" onclick="changeCalYear(-1)">◀</button>
       <span class="cal-year-label" id="cal-year-label">2026</span>
       <button class="cal-year-btn" onclick="changeCalYear(1)">▶</button>
     </div>
     <div id="cal-grid"></div>
+  </div>
 
-    <!-- TODOパネル（非表示・互換性のため残す） -->
-    <div class="todo-panel" id="todo-panel" style="display:none">
-      <div class="todo-list" id="todo-list"></div>
-      <div class="todo-add-form">
-        <input id="todo-text" type="text"><input id="todo-due" type="date">
-        <select id="todo-assignee"><option value="">担当者</option></select>
-        <button onclick="addTodo()">追加</button>
-      </div>
+  <!-- TODOパネル（互換性のため残す・非表示） -->
+  <div class="todo-panel" id="todo-panel" style="display:none">
+    <div class="todo-list" id="todo-list"></div>
+    <div class="todo-add-form">
+      <input id="todo-text" type="text"><input id="todo-due" type="date">
+      <select id="todo-assignee"><option value="">担当者</option></select>
+      <button onclick="addTodo()">追加</button>
     </div>
   </div>
 
@@ -563,6 +565,7 @@ function sw(v,btn){
   if(v==='srch') renderSrch();
   if(v==='num') renderNum();
   if(v==='cal') renderCal();
+  if(v==='top') renderDashboard();
 }
 
 let _calYear = new Date().getFullYear();
@@ -1076,6 +1079,7 @@ function renderAll(){
   initCalYear();
   renderDow(); renderNum(); renderSrch(); renderCal();
   renderDashboard();
+  document.getElementById('hcount').textContent=`${today.getMonth()+1}月${today.getDate()}日現在`;
 }
 
 function renderDashboard(){
