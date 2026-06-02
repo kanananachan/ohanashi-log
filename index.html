@@ -34,6 +34,16 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--paper); color:
 .todo-toggle-btn .arrow { font-size: 9px; transition: transform 0.2s; display: inline-block; }
 .todo-toggle-btn.open .arrow { transform: rotate(180deg); }
 
+/* 顔アイコン＋吹き出し */
+.todo-bubble-wrap { display: flex; align-items: flex-end; gap: 4px; }
+.todo-face-icon { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; flex-shrink: 0; display: block; }
+.todo-bubbles { display: flex; flex-direction: column; gap: 4px; }
+.todo-bubble { position: relative; background: #fff; border: 1px solid var(--border); border-radius: 12px 12px 12px 2px; padding: 4px 10px; font-size: 11px; color: var(--ink); white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,0.07); line-height: 1.5; }
+.todo-bubble.overdue { border-color: #c0392b; background: #fff5f5; color: #c0392b; }
+.todo-bubble.today   { border-color: #c07a2a; background: #fff9f0; color: #c07a2a; }
+.todo-bubble-assignee { display: inline-block; width: 14px; height: 14px; border-radius: 50%; font-size: 9px; font-weight: 700; line-height: 14px; text-align: center; color: #fff; margin-right: 4px; vertical-align: middle; }
+.todo-bubble-more { font-size: 10px; color: var(--muted); padding: 0 4px; }
+
 .nav { display: flex; gap: 4px; padding: 0.75rem 1.5rem; background: var(--cream); border-bottom: 1px solid var(--border); overflow-x: auto; }
 .navbtn { padding: 5px 16px; font-size: 12px; font-family: 'Noto Sans JP', sans-serif; border: 1px solid var(--border); border-radius: 20px; background: transparent; color: var(--muted); cursor: pointer; white-space: nowrap; transition: all 0.15s; }
 .navbtn:hover { background: var(--paper2); color: var(--ink); }
@@ -244,8 +254,11 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
 
 <div class="header">
   <div class="header-title">はらぺこ文庫　おはなしの時間</div>
-  <button class="todo-toggle-btn" id="todo-toggle-btn" onclick="toggleTodoPanel()">📝 TODO <span class="arrow">▼</span></button>
-  <div class="todo-bar" id="todo-bar"></div>
+  <button class="todo-toggle-btn" id="todo-toggle-btn" onclick="toggleTodoPanel()">TODO <span class="arrow">▼</span></button>
+  <div class="todo-bubble-wrap" id="todo-bar">
+    <img class="todo-face-icon" src="face-icon.png" alt="顔アイコン" id="todo-face" style="display:none">
+    <div class="todo-bubbles" id="todo-bubbles"></div>
+  </div>
   <div class="header-count" id="hcount"></div>
 </div>
 
@@ -812,33 +825,36 @@ function toggleTodoPanel(){
 function renderTodoBar(){
   const today = new Date(); today.setHours(0,0,0,0);
   const todos = loadTodos().filter(t => !t.done);
-  // 期日が近い順に最大3件表示
   const sorted = todos.filter(t => t.due).sort((a,b)=>a.due.localeCompare(b.due));
   const noDue  = todos.filter(t => !t.due);
   const show   = [...sorted, ...noDue].slice(0, 3);
-  const bar = document.getElementById('todo-bar');
-  // ボタン以外の既存チップを削除
-  Array.from(bar.querySelectorAll('.todo-chip')).forEach(el=>el.remove());
+
+  const face    = document.getElementById('todo-face');
+  const bubbles = document.getElementById('todo-bubbles');
+  bubbles.innerHTML = '';
+
+  if(!show.length){ face.style.display='none'; return; }
+  face.style.display = '';
+
   show.forEach(t => {
-    const chip = document.createElement('span');
-    const dueDate = t.due ? new Date(t.due+'T00:00:00') : null;
+    const dueDate  = t.due ? new Date(t.due+'T00:00:00') : null;
     const isOverdue = dueDate && dueDate < today;
     const isToday   = dueDate && dueDate.getTime() === today.getTime();
-    chip.className = 'todo-chip' + (isOverdue?' overdue':isToday?' today':'');
-    const color = t.assignee ? readerColor(t.assignee) : '#aaa';
+    const color   = t.assignee ? readerColor(t.assignee) : '#aaa';
     const initial = t.assignee ? readerInitial(t.assignee) : '';
-    chip.innerHTML = (t.assignee
-      ? `<span class="todo-assignee-icon" style="background:${color}">${initial}</span>`
-      : '') +
-      `<span>${t.text}</span>` +
-      (t.due ? `<span style="font-size:10px;opacity:0.75">${t.due.slice(5).replace('-','/')}</span>` : '');
-    bar.appendChild(chip);
+    const dueTxt  = t.due ? `　<span style="font-size:10px;opacity:0.7">${t.due.slice(5).replace('-','/')}</span>` : '';
+    const bub = document.createElement('div');
+    bub.className = 'todo-bubble' + (isOverdue?' overdue':isToday?' today':'');
+    bub.innerHTML =
+      (t.assignee ? `<span class="todo-bubble-assignee" style="background:${color}">${initial}</span>` : '') +
+      t.text + dueTxt;
+    bubbles.appendChild(bub);
   });
   if(todos.length > 3){
-    const more = document.createElement('span');
-    more.style.cssText = 'font-size:11px;color:var(--muted)';
-    more.textContent = `+${todos.length - 3}件`;
-    bar.appendChild(more);
+    const more = document.createElement('div');
+    more.className = 'todo-bubble-more';
+    more.textContent = `…他${todos.length - 3}件`;
+    bubbles.appendChild(more);
   }
 }
 
