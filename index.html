@@ -57,9 +57,9 @@ body {
 /* ── コンテンツ ── */
 .content-wrap { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--cream); }
 
-/* ── タイトルバナー ── */
-.app-title-banner { position: absolute; top: -10px; right: 0; z-index: 10; pointer-events: none; }
-.app-title-banner img { display: block; height: auto; width: auto; }
+/* ── タイトルバナー（ダッシュボード右列） ── */
+.app-title-banner { display: none; }
+.dash-title-img { display: block; width: 100%; height: auto; }
 
 /* ── ナビ ── */
 .nav { display: flex; gap: 4px; padding: 0.6rem 1.5rem; background: transparent; border-bottom: 1px solid var(--border); overflow-x: auto; align-items: center; }
@@ -72,8 +72,9 @@ body {
 .view.on { display: block; }
 
 /* ── ダッシュボード（カレンダービューのトップ） ── */
-.dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+.dashboard { display: grid; grid-template-columns: 1fr 1fr 100px; gap: 16px; margin-bottom: 24px; }
 .dash-left-col { display: flex; flex-direction: column; gap: 16px; }
+.dash-title-col { display: flex; align-items: flex-start; justify-content: center; }
 
 /* タスクパネル */
 .dash-task-panel { background: rgba(255,255,255,0.75); border-radius: 12px; padding: 16px 18px; }
@@ -342,9 +343,6 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
 
 <!-- コンテンツ -->
 <div class="content-wrap">
-  <div class="app-title-banner">
-    <img src="title.png" alt="はらぺこ文庫 おはなしの時間">
-  </div>
   <div class="nav">
     <button class="navbtn on" onclick="sw('top',this)">TOP</button>
     <button class="navbtn" onclick="sw('cal',this)">年間カレンダー</button>
@@ -437,7 +435,7 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
         <div id="dash-mini-cal-wrap"></div>
       </div>
 
-      <!-- 右列：今週のプログラム -->
+      <!-- 中央列：今週のプログラム -->
       <div class="dash-program-wrap">
         <div class="dash-program-frame">
           <img src="program.png" alt="" class="dash-program-bg">
@@ -446,6 +444,11 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
             <div id="dash-program-body"></div>
           </div>
         </div>
+      </div>
+
+      <!-- 右列：タイトル画像 -->
+      <div class="dash-title-col">
+        <img src="title.png" alt="はらぺこ文庫 おはなしの時間" class="dash-title-img">
       </div>
     </div>
   </div>
