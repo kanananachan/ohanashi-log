@@ -112,6 +112,8 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
 .cal-day.has-event:hover { background: var(--paper2) !important; }
 .cal-day.clickable { cursor: pointer; }
 .cal-day.clickable:hover { background: #f0f5f0 !important; }
+.cal-kyugyo { font-size: 7px; text-align: center; color: #c0392b; font-weight: 500; margin-top: 1px; line-height: 1.2; }
+.cal-kyugyo-kari { color: #e07820; }
 .cal-popup { display: none; position: fixed; z-index: 1000; background: var(--cream); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; width: 300px; box-shadow: 0 4px 16px rgba(0,0,0,0.12); pointer-events: none; }
 .cal-popup.show { display: block; }
 .cal-popup-head { font-size: 12px; font-weight: 500; color: var(--brown); margin-bottom: 8px; padding-bottom: 6px; border-bottom: 0.5px solid var(--border); }
@@ -361,6 +363,18 @@ const EIGYO_DOW = new Set([3, 4, 5]); // 水=3 木=4 金=5
 const READERS = ['まるちゃん','かなえちゃん','そねちゃん','ちゃこさん','しーちゃん','おりちゃん','おおさん'];
 const KNOWN_TIMES = ['10:00','15:00','17:00','17:45','18:00'];
 
+// 休業日
+const KYUGYO = new Set([
+  '2026-08-12','2026-08-13','2026-08-14',
+  '2026-09-23','2026-09-24','2026-09-25',
+  '2026-11-04','2026-11-05','2026-11-06',
+  '2026-12-30','2026-12-31',
+  '2027-01-01'
+]);
+const KYUGYO_KARI = new Set([
+  '2026-10-21','2026-10-23','2026-10-24'
+]);
+
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwl2v-vdXh4twpKzimRRXumwa7iPeydEmrTtLruwYodpPmx1CwlrtVN0elqz3QYDlJ_/exec';
 let records = [];
 
@@ -442,14 +456,21 @@ function renderCal(){
       if(rec) cls+=' has-event';
       else cls+=' clickable';
 
+      const isKyugyo = KYUGYO.has(ds);
+      const isKyugyoKari = KYUGYO_KARI.has(ds);
+
       let bg='';
-      if(rec&&isFuture) bg='background:#fff8ee;';
+      if(isKyugyo) bg='background:#fdecea;';
+      else if(isKyugyoKari) bg='background:#fff4ec;';
+      else if(rec&&isFuture) bg='background:#fff8ee;';
       else if(isPast&&!rec) bg='background:#f8f4ef;';
 
       let inner=`<div class="cal-day-num ${numCls}">${d}</div>`;
       if(rec){
         inner+=`<div class="cal-dot ${isFuture?'future':'done'}"></div><div style="font-size:8px;text-align:center;color:${isFuture?'#8a6020':'#5f5e5a'};margin-top:1px">第${rec.num}回</div>`;
       }
+      if(isKyugyo) inner+=`<div class="cal-kyugyo">休業</div>`;
+      else if(isKyugyoKari) inner+=`<div class="cal-kyugyo cal-kyugyo-kari">休業(仮)</div>`;
 
       let handlers='';
       if(rec){
