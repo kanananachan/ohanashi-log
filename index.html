@@ -35,24 +35,15 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--paper); color:
 .todo-toggle-btn.open .arrow { transform: rotate(180deg); }
 
 /* 顔アイコン＋吹き出し */
-/* TODO バー：アイコン＋矢印吹き出し */
-.todo-speaker { display: flex; align-items: flex-end; gap: 6px; }
-.todo-speaker-icon { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; display: block; border: 2px solid var(--border); }
-.todo-speaker-icon.initial { display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: #fff; }
-.todo-bubbles { display: flex; flex-direction: column; gap: 5px; }
-/* 矢印吹き出し（左からしっぽ） */
-.todo-bubble { position: relative; background: #fff; border: 1.5px solid var(--border); border-radius: 10px; padding: 5px 11px; font-size: 11px; color: var(--ink); white-space: nowrap; box-shadow: 0 1px 4px rgba(0,0,0,0.08); line-height: 1.5; }
-.todo-bubble::before { content:''; position: absolute; left: -8px; bottom: 8px; border: 5px solid transparent; border-right-color: var(--border); }
-.todo-bubble::after  { content:''; position: absolute; left: -6px; bottom: 9px; border: 4px solid transparent; border-right-color: #fff; }
+/* TODO バー */
+.todo-speaker { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.todo-bubbles { display: flex; flex-direction: column; gap: 4px; }
+.todo-bubble { display: flex; align-items: center; gap: 6px; background: #fff; border: 1px solid var(--border); border-radius: 20px; padding: 3px 10px 3px 4px; font-size: 11px; color: var(--ink); white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,0.07); line-height: 1.5; }
 .todo-bubble.overdue { border-color: #c0392b; background: #fff5f5; color: #c0392b; }
-.todo-bubble.overdue::before { border-right-color: #c0392b; }
-.todo-bubble.overdue::after  { border-right-color: #fff5f5; }
 .todo-bubble.today   { border-color: #c07a2a; background: #fff9f0; color: #c07a2a; }
-.todo-bubble.today::before   { border-right-color: #c07a2a; }
-.todo-bubble.today::after    { border-right-color: #fff9f0; }
-.todo-bubble-more { font-size: 10px; color: var(--muted); padding-left: 4px; }
-/* 旧クラス（削除済みだが念のため） */
-.todo-bubble-assignee { display:none; }
+.todo-bubble-icon { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; flex-shrink: 0; display: block; }
+.todo-bubble-icon.initial { display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; }
+.todo-bubble-more { font-size: 10px; color: var(--muted); padding: 0 4px; }
 
 .nav { display: flex; gap: 4px; padding: 0.75rem 1.5rem; background: var(--cream); border-bottom: 1px solid var(--border); overflow-x: auto; }
 .navbtn { padding: 5px 16px; font-size: 12px; font-family: 'Noto Sans JP', sans-serif; border: 1px solid var(--border); border-radius: 20px; background: transparent; color: var(--muted); cursor: pointer; white-space: nowrap; transition: all 0.15s; }
@@ -275,7 +266,6 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
   <div class="header-title">はらぺこ文庫　おはなしの時間</div>
   <button class="todo-toggle-btn" id="todo-toggle-btn" onclick="toggleTodoPanel()">TODO <span class="arrow">▼</span></button>
   <div class="todo-speaker" id="todo-bar">
-    <div id="todo-face-wrap" style="display:none"></div>
     <div class="todo-bubbles" id="todo-bubbles"></div>
   </div>
   <div class="header-count" id="hcount"></div>
@@ -901,43 +891,32 @@ function renderTodoBar(){
   const noDue  = todos.filter(t => !t.due);
   const show   = [...sorted, ...noDue].slice(0, 3);
 
-  const faceWrap = document.getElementById('todo-face-wrap');
-  const bubbles  = document.getElementById('todo-bubbles');
-  faceWrap.innerHTML = '';
-  bubbles.innerHTML  = '';
-
-  if(!show.length){ faceWrap.style.display='none'; return; }
-
-  // 担当者を代表1人決める（最初のtodo）
-  const rep = show.find(t => t.assignee) || show[0];
-  const assignee = rep?.assignee || '';
-  const iconSrc  = assignee && READER_ICONS[assignee];
-  const color    = assignee ? readerColor(assignee) : '#bbb';
-  const initial  = assignee ? readerInitial(assignee) : '？';
-
-  if(iconSrc){
-    const img = document.createElement('img');
-    img.src = iconSrc;
-    img.className = 'todo-speaker-icon';
-    img.alt = assignee;
-    faceWrap.appendChild(img);
-  } else {
-    const ic = document.createElement('div');
-    ic.className = 'todo-speaker-icon initial';
-    ic.style.background = color;
-    ic.textContent = initial;
-    faceWrap.appendChild(ic);
-  }
-  faceWrap.style.display = '';
+  const bubbles = document.getElementById('todo-bubbles');
+  bubbles.innerHTML = '';
+  if(!show.length) return;
 
   show.forEach(t => {
     const dueDate   = t.due ? new Date(t.due+'T00:00:00') : null;
     const isOverdue = dueDate && dueDate < today;
     const isToday   = dueDate && dueDate.getTime() === today.getTime();
-    const dueTxt    = t.due ? `　<span style="font-size:10px;opacity:0.7">${t.due.slice(5).replace('-','/')}</span>` : '';
+    const dueTxt    = t.due ? `<span style="font-size:10px;opacity:0.7;margin-left:4px">${t.due.slice(5).replace('-','/')}</span>` : '';
+
+    // アイコン要素
+    const iconSrc = t.assignee && READER_ICONS[t.assignee];
+    let iconEl;
+    if(iconSrc){
+      iconEl = `<img class="todo-bubble-icon" src="${iconSrc}" alt="${t.assignee}">`;
+    } else if(t.assignee){
+      const color = readerColor(t.assignee);
+      const initial = readerInitial(t.assignee);
+      iconEl = `<span class="todo-bubble-icon initial" style="background:${color}">${initial}</span>`;
+    } else {
+      iconEl = '';
+    }
+
     const bub = document.createElement('div');
     bub.className = 'todo-bubble' + (isOverdue?' overdue':isToday?' today':'');
-    bub.innerHTML = t.text + dueTxt;
+    bub.innerHTML = iconEl + t.text + dueTxt;
     bubbles.appendChild(bub);
   });
 
