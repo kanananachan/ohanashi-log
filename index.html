@@ -167,6 +167,33 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
 .btn-delete:hover { background: #c0392b; color: #fff; }
 .save-note { font-size: 11px; color: var(--muted); margin-right: auto; align-self: center; }
 
+/* TODO */
+.todo-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12px; margin-left: auto; }
+.todo-chip { display: inline-flex; align-items: center; gap: 5px; background: var(--cream); border: 1px solid var(--border); border-radius: 20px; padding: 3px 10px 3px 6px; font-size: 11px; color: var(--ink); white-space: nowrap; cursor: default; }
+.todo-chip.overdue { border-color: #c0392b; background: #fff5f5; color: #c0392b; }
+.todo-chip.today   { border-color: #c07a2a; background: #fff9f0; color: #c07a2a; }
+.todo-assignee-icon { display: inline-block; width: 18px; height: 18px; border-radius: 50%; font-size: 10px; font-weight: 700; line-height: 18px; text-align: center; color: #fff; flex-shrink: 0; }
+.todo-open-btn { background: none; border: none; font-size: 11px; color: var(--muted); cursor: pointer; padding: 2px 6px; border-radius: 12px; border: 1px solid var(--border); white-space: nowrap; }
+.todo-open-btn:hover { background: var(--paper2); color: var(--ink); }
+
+.todo-panel { background: var(--cream); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+.todo-panel-title { font-family: 'Zen Kurenaido', serif; font-size: 15px; color: var(--ink); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+.todo-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.todo-item { display: flex; align-items: center; gap: 8px; padding: 7px 10px; background: var(--paper); border-radius: 8px; border: 1px solid var(--border); font-size: 12px; }
+.todo-item.done { opacity: 0.45; }
+.todo-item-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.todo-item-due { font-size: 11px; color: var(--muted); white-space: nowrap; }
+.todo-item.overdue .todo-item-due { color: #c0392b; font-weight: 600; }
+.todo-item.today-due .todo-item-due { color: #c07a2a; font-weight: 600; }
+.todo-item-del { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px; line-height: 1; padding: 0 2px; flex-shrink: 0; }
+.todo-item-del:hover { color: #c0392b; }
+.todo-add-form { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.todo-add-form input, .todo-add-form select { font-size: 12px; padding: 6px 8px; border: 1px solid var(--border); border-radius: 7px; background: var(--paper); color: var(--ink); font-family: 'Noto Sans JP', sans-serif; }
+.todo-add-form input[name=text] { flex: 1; min-width: 140px; }
+.todo-add-form input[name=due]  { width: 130px; }
+.todo-add-btn { font-size: 12px; padding: 6px 14px; border: none; border-radius: 7px; background: var(--ink); color: var(--cream); cursor: pointer; white-space: nowrap; font-family: 'Noto Sans JP', sans-serif; }
+.todo-add-btn:hover { opacity: 0.85; }
+
 /* 時間帯チェックボックス */
 .times-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .times-chip { position: relative; }
@@ -213,7 +240,9 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
 
 <div class="header">
   <div class="header-title">はらぺこ文庫　おはなしの時間</div>
-  <div class="header-sub">水・木・金曜日開催</div>
+  <div class="todo-bar" id="todo-bar">
+    <button class="todo-open-btn" onclick="toggleTodoPanel()">📝 TODO</button>
+  </div>
   <div class="header-count" id="hcount"></div>
 </div>
 
@@ -291,6 +320,22 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
 
   <!-- 年間カレンダー -->
   <div class="view on" id="v-cal">
+    <!-- TODOパネル -->
+    <div class="todo-panel" id="todo-panel" style="display:none">
+      <div class="todo-panel-title">
+        <span>📝 やることリスト</span>
+        <button class="todo-open-btn" onclick="toggleTodoPanel()">閉じる</button>
+      </div>
+      <div class="todo-list" id="todo-list"></div>
+      <div class="todo-add-form">
+        <input name="text" id="todo-text" type="text" placeholder="タスクを入力…" />
+        <input name="due"  id="todo-due"  type="date" />
+        <select id="todo-assignee">
+          <option value="">担当者</option>
+        </select>
+        <button class="todo-add-btn" onclick="addTodo()">追加</button>
+      </div>
+    </div>
     <div class="ctrl" style="margin-bottom:1rem">
       <select id="cal-year" onchange="renderCal()"></select>
     </div>
@@ -725,6 +770,136 @@ async function saveRecord(){
   btn.textContent='保存する';
 }
 
+// ── TODO ──────────────────────────────────────────────
+const TODO_KEY = 'ohanashi-todos';
+// 担当者ごとの色
+const READER_COLORS = ['#7a9e7e','#5b7fa6','#c07a2a','#a06080','#6aabb0','#b07a40','#8a8a5a'];
+
+function loadTodos(){ try{ return JSON.parse(localStorage.getItem(TODO_KEY)||'[]'); }catch(e){ return []; } }
+function saveTodos(todos){ localStorage.setItem(TODO_KEY, JSON.stringify(todos)); }
+
+function readerColor(name){
+  const READERS_LOCAL = ['まるちゃん','かなえちゃん','そねちゃん','ちゃこさん','しーちゃん','おりちゃん','おおさん'];
+  const i = READERS_LOCAL.indexOf(name);
+  return READER_COLORS[i >= 0 ? i : READER_COLORS.length - 1];
+}
+function readerInitial(name){ return name ? name[0] : '？'; }
+
+function initTodo(){
+  // セレクトボックスにREADERSを追加
+  const sel = document.getElementById('todo-assignee');
+  READERS.forEach(r => {
+    const opt = document.createElement('option');
+    opt.value = r; opt.textContent = r;
+    sel.appendChild(opt);
+  });
+  renderTodoBar();
+  renderTodoList();
+}
+
+function toggleTodoPanel(){
+  const panel = document.getElementById('todo-panel');
+  const isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : '';
+  if(!isOpen) renderTodoList();
+}
+
+function renderTodoBar(){
+  const today = new Date(); today.setHours(0,0,0,0);
+  const todos = loadTodos().filter(t => !t.done);
+  // 期日が近い順に最大3件表示
+  const sorted = todos.filter(t => t.due).sort((a,b)=>a.due.localeCompare(b.due));
+  const noDue  = todos.filter(t => !t.due);
+  const show   = [...sorted, ...noDue].slice(0, 3);
+  const bar = document.getElementById('todo-bar');
+  // ボタン以外の既存チップを削除
+  Array.from(bar.querySelectorAll('.todo-chip')).forEach(el=>el.remove());
+  show.forEach(t => {
+    const chip = document.createElement('span');
+    const dueDate = t.due ? new Date(t.due+'T00:00:00') : null;
+    const isOverdue = dueDate && dueDate < today;
+    const isToday   = dueDate && dueDate.getTime() === today.getTime();
+    chip.className = 'todo-chip' + (isOverdue?' overdue':isToday?' today':'');
+    const color = t.assignee ? readerColor(t.assignee) : '#aaa';
+    const initial = t.assignee ? readerInitial(t.assignee) : '';
+    chip.innerHTML = (t.assignee
+      ? `<span class="todo-assignee-icon" style="background:${color}">${initial}</span>`
+      : '') +
+      `<span>${t.text}</span>` +
+      (t.due ? `<span style="font-size:10px;opacity:0.75">${t.due.slice(5).replace('-','/')}</span>` : '');
+    bar.insertBefore(chip, bar.querySelector('.todo-open-btn'));
+  });
+  if(todos.length > 3){
+    const more = document.createElement('span');
+    more.style.cssText = 'font-size:11px;color:var(--muted)';
+    more.textContent = `+${todos.length - 3}件`;
+    bar.insertBefore(more, bar.querySelector('.todo-open-btn'));
+  }
+}
+
+function renderTodoList(){
+  const today = new Date(); today.setHours(0,0,0,0);
+  const todos = loadTodos();
+  const list = document.getElementById('todo-list');
+  if(!todos.length){ list.innerHTML='<div style="font-size:12px;color:var(--muted);padding:4px 0">タスクはありません</div>'; return; }
+  list.innerHTML = '';
+  // 未完了→期日昇順、完了は末尾
+  const sorted = [
+    ...todos.filter(t=>!t.done).sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999')),
+    ...todos.filter(t=> t.done)
+  ];
+  sorted.forEach((t, _) => {
+    const idx = todos.indexOf(t);
+    const dueDate = t.due ? new Date(t.due+'T00:00:00') : null;
+    const isOverdue  = !t.done && dueDate && dueDate < today;
+    const isTodayDue = !t.done && dueDate && dueDate.getTime()===today.getTime();
+    const item = document.createElement('div');
+    item.className = 'todo-item' + (t.done?' done':'') + (isOverdue?' overdue':isTodayDue?' today-due':'');
+    const color = t.assignee ? readerColor(t.assignee) : '#ccc';
+    const initial = t.assignee ? readerInitial(t.assignee) : '';
+    const dueTxt = t.due ? t.due.slice(5).replace('-','/') + (isOverdue?' 期限切れ':isTodayDue?' 今日':'') : '';
+    item.innerHTML =
+      `<input type="checkbox" ${t.done?'checked':''} onchange="toggleTodoDone(${idx})" style="accent-color:var(--ink);flex-shrink:0">` +
+      (t.assignee ? `<span class="todo-assignee-icon" style="background:${color}">${initial}</span>` : '') +
+      `<span class="todo-item-text">${t.text}</span>` +
+      (dueTxt ? `<span class="todo-item-due">${dueTxt}</span>` : '') +
+      `<button class="todo-item-del" onclick="deleteTodo(${idx})" title="削除">×</button>`;
+    list.appendChild(item);
+  });
+}
+
+function addTodo(){
+  const text = document.getElementById('todo-text').value.trim();
+  if(!text) return;
+  const due = document.getElementById('todo-due').value;
+  const assignee = document.getElementById('todo-assignee').value;
+  const todos = loadTodos();
+  todos.push({ text, due, assignee, done: false });
+  saveTodos(todos);
+  document.getElementById('todo-text').value = '';
+  document.getElementById('todo-due').value = '';
+  document.getElementById('todo-assignee').value = '';
+  renderTodoList();
+  renderTodoBar();
+}
+
+function toggleTodoDone(idx){
+  const todos = loadTodos();
+  if(todos[idx]) todos[idx].done = !todos[idx].done;
+  saveTodos(todos);
+  renderTodoList();
+  renderTodoBar();
+}
+
+function deleteTodo(idx){
+  const todos = loadTodos();
+  todos.splice(idx, 1);
+  saveTodos(todos);
+  renderTodoList();
+  renderTodoBar();
+}
+// ──────────────────────────────────────────────────────
+
 function renderAll(){
   const today=new Date(); today.setHours(0,0,0,0);
   document.getElementById('hcount').textContent=`${today.getMonth()+1}月${today.getDate()}日現在`;
@@ -934,6 +1109,7 @@ document.getElementById('cal-grid').innerHTML='<div class="empty">データを�
 loadFromSheet().then(()=>{
   renderAll();
 });
+initTodo();
 </script>
 </body>
 </html>
