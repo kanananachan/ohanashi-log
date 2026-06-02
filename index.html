@@ -463,7 +463,7 @@ function renderCal(){
       if(isKyugyo) bg='background:#fdecea;';
       else if(isKyugyoKari) bg='background:#fff4ec;';
       else if(rec&&isFuture) bg='background:#fff8ee;';
-      else if(isPast&&!rec) bg='background:#f8f4ef;';
+      else if(isPast) bg='background:#f8f4ef;';
 
       let inner=`<div class="cal-day-num ${numCls}">${d}</div>`;
       if(rec){
