@@ -25,10 +25,14 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'Noto Sans JP', sans-serif; background: var(--paper); color: var(--ink); min-height: 100vh; }
 
-.header { background: var(--cream); border-bottom: 1px solid var(--border); padding: 1.25rem 1.5rem; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.header { background: var(--cream); border-bottom: 1px solid var(--border); padding: 1.25rem 1.5rem; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .header-title { font-family: 'Zen Kurenaido', serif; font-size: 22px; color: var(--ink); letter-spacing: 0.05em; }
 .header-sub { font-size: 12px; color: var(--muted); }
 .header-count { font-size: 12px; color: var(--muted); margin-left: auto; }
+.todo-toggle-btn { display: inline-flex; align-items: center; gap: 3px; font-size: 12px; font-family: 'Noto Sans JP', sans-serif; padding: 3px 10px 3px 10px; border: 1px solid var(--border); border-radius: 14px; background: var(--paper2); color: var(--ink); cursor: pointer; white-space: nowrap; transition: background 0.15s; }
+.todo-toggle-btn:hover { background: var(--border); }
+.todo-toggle-btn .arrow { font-size: 9px; transition: transform 0.2s; display: inline-block; }
+.todo-toggle-btn.open .arrow { transform: rotate(180deg); }
 
 .nav { display: flex; gap: 4px; padding: 0.75rem 1.5rem; background: var(--cream); border-bottom: 1px solid var(--border); overflow-x: auto; }
 .navbtn { padding: 5px 16px; font-size: 12px; font-family: 'Noto Sans JP', sans-serif; border: 1px solid var(--border); border-radius: 20px; background: transparent; color: var(--muted); cursor: pointer; white-space: nowrap; transition: all 0.15s; }
@@ -240,9 +244,8 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
 
 <div class="header">
   <div class="header-title">はらぺこ文庫　おはなしの時間</div>
-  <div class="todo-bar" id="todo-bar">
-    <button class="todo-open-btn" onclick="toggleTodoPanel()">📝 TODO</button>
-  </div>
+  <button class="todo-toggle-btn" id="todo-toggle-btn" onclick="toggleTodoPanel()">📝 TODO <span class="arrow">▼</span></button>
+  <div class="todo-bar" id="todo-bar"></div>
   <div class="header-count" id="hcount"></div>
 </div>
 
@@ -324,7 +327,6 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
     <div class="todo-panel" id="todo-panel" style="display:none">
       <div class="todo-panel-title">
         <span>📝 やることリスト</span>
-        <button class="todo-open-btn" onclick="toggleTodoPanel()">閉じる</button>
       </div>
       <div class="todo-list" id="todo-list"></div>
       <div class="todo-add-form">
@@ -799,8 +801,10 @@ function initTodo(){
 
 function toggleTodoPanel(){
   const panel = document.getElementById('todo-panel');
+  const btn   = document.getElementById('todo-toggle-btn');
   const isOpen = panel.style.display !== 'none';
   panel.style.display = isOpen ? 'none' : '';
+  btn.classList.toggle('open', !isOpen);
   if(!isOpen) renderTodoList();
 }
 
@@ -827,13 +831,13 @@ function renderTodoBar(){
       : '') +
       `<span>${t.text}</span>` +
       (t.due ? `<span style="font-size:10px;opacity:0.75">${t.due.slice(5).replace('-','/')}</span>` : '');
-    bar.insertBefore(chip, bar.querySelector('.todo-open-btn'));
+    bar.appendChild(chip);
   });
   if(todos.length > 3){
     const more = document.createElement('span');
     more.style.cssText = 'font-size:11px;color:var(--muted)';
     more.textContent = `+${todos.length - 3}件`;
-    bar.insertBefore(more, bar.querySelector('.todo-open-btn'));
+    bar.appendChild(more);
   }
 }
 
