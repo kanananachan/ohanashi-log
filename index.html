@@ -851,7 +851,7 @@ const TODO_KEY = 'ohanashi-todos';
 // まるちゃん, かなえちゃん, そねちゃん, ちゃこさん, しーちゃん, おりちゃん, おおさん
 const READER_COLORS = ['#e8822a','#e06090','#5bbcd0','#1a3a6b','#7ecb35','#aaaaaa','#f0c030'];
 // 顔アイコン画像（画像ファイルがある人だけ指定）
-const READER_ICONS = { 'まるちゃん': 'face-icon.png' };
+const READER_ICONS = { 'まるちゃん': 'face-icon_maruchan.png', 'かなえちゃん': 'face-icon_kanaechan.png' };
 
 function loadTodos(){ try{ return JSON.parse(localStorage.getItem(TODO_KEY)||'[]'); }catch(e){ return []; } }
 function saveTodos(todos){ localStorage.setItem(TODO_KEY, JSON.stringify(todos)); }
