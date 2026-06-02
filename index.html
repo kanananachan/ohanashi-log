@@ -56,9 +56,12 @@ body {
 /* ── コンテンツ ── */
 .content-wrap { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--cream); }
 
+/* ── タイトルバナー ── */
+.app-title-banner { padding: 20px 24px 12px; }
+.app-title-banner img { display: block; height: auto; width: auto; }
+
 /* ── ナビ ── */
-.nav { display: flex; gap: 4px; padding: 1rem 1.5rem; background: transparent; border-bottom: 1px solid var(--border); overflow-x: auto; align-items: center; }
-.nav-title-img { height: auto; width: auto; margin-left: auto; flex-shrink: 0; display: block; }
+.nav { display: flex; gap: 4px; padding: 0.6rem 1.5rem; background: transparent; border-bottom: 1px solid var(--border); overflow-x: auto; align-items: center; }
 .navbtn { padding: 5px 16px; font-size: 12px; font-family: 'Noto Sans JP', sans-serif; border: 1px solid var(--border); border-radius: 20px; background: transparent; color: var(--muted); cursor: pointer; white-space: nowrap; transition: all 0.15s; }
 .navbtn:hover { background: var(--paper2); color: var(--ink); }
 .navbtn.on { background: var(--ink); color: var(--cream); border-color: var(--ink); }
@@ -72,7 +75,8 @@ body {
 
 /* タスクパネル */
 .dash-task-panel { background: rgba(255,255,255,0.75); border-radius: 12px; padding: 16px 18px; }
-.dash-task-title { font-size: 13px; font-weight: 500; color: var(--muted); margin-bottom: 12px; letter-spacing: 0.05em; }
+.dash-task-title { margin-bottom: 12px; }
+.dash-task-title img { display: block; width: auto; height: auto; max-width: 100%; }
 .dash-task-list { display: flex; flex-direction: column; gap: 8px; }
 .dash-task-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--ink); }
 .dash-task-item input[type=checkbox] { accent-color: var(--brown); flex-shrink: 0; width: 14px; height: 14px; }
@@ -336,13 +340,15 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
 
 <!-- コンテンツ -->
 <div class="content-wrap">
+  <div class="app-title-banner">
+    <img src="title.png" alt="はらぺこ文庫 おはなしの時間">
+  </div>
   <div class="nav">
     <button class="navbtn on" onclick="sw('top',this)">TOP</button>
     <button class="navbtn" onclick="sw('cal',this)">年間カレンダー</button>
     <button class="navbtn" onclick="sw('num',this)">開催情報</button>
     <button class="navbtn" onclick="sw('dow',this)">曜日ごと作品</button>
     <button class="navbtn" onclick="sw('srch',this)">データ一覧／検索</button>
-    <img src="title.png" alt="はらぺこ文庫 おはなしの時間" class="nav-title-img">
   </div>
 
   <div class="main">
@@ -415,7 +421,7 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
     <div class="dashboard">
       <!-- タスク -->
       <div class="dash-task-panel">
-        <div class="dash-task-title">タスク</div>
+        <div class="dash-task-title"><img src="task.png" alt="タスク"></div>
         <div class="dash-task-list" id="dash-task-list"></div>
         <div class="dash-task-add">
           <input id="dash-todo-text" type="text" placeholder="タスクを追加…" onkeydown="if(event.key==='Enter')addDashTodo()">
