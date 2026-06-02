@@ -112,7 +112,7 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
 .cal-dow-cell.sun { color: #c0392b; }
 .cal-dow-cell.sat { color: #2980b9; }
 .cal-days { display: grid; grid-template-columns: repeat(7, 1fr); }
-.cal-day { min-height: 36px; border-right: 0.5px solid var(--border); border-bottom: 0.5px solid var(--border); padding: 3px 2px; position: relative; }
+.cal-day { height: 52px; border-right: 0.5px solid var(--border); border-bottom: 0.5px solid var(--border); padding: 3px 2px; position: relative; overflow: hidden; }
 .cal-day:nth-child(7n) { border-right: none; }
 .cal-day.blank { background: #f8f4ef; }
 .cal-day.today .cal-day-num { background: var(--brown); color: #fff; border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; }
@@ -237,7 +237,7 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
   .num-date { font-size: 12px; }
   .cal-grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; }
   .cal-month-head { font-size: 12px; padding: 5px 8px; }
-  .cal-day { min-height: 28px; }
+  .cal-day { height: 44px; }
   .cal-day-num { font-size: 9px; }
   .cal-popup { width: calc(100vw - 32px); left: 16px !important; }
   .tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
