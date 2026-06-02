@@ -426,7 +426,7 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
           <div class="dash-task-title"><img src="task.png" alt="タスク"></div>
           <div class="dash-task-list" id="dash-task-list"></div>
           <div class="dash-task-add">
-            <input id="dash-todo-text" type="text" placeholder="タスクを追加…" onkeydown="if(event.key==='Enter')addDashTodo()">
+            <input id="dash-todo-text" type="text" placeholder="タスクを追加…" onkeydown="if(event.key==='Enter')event.preventDefault()">
             <input id="dash-todo-due"  type="date">
             <select id="dash-todo-assignee"><option value="">担当者</option></select>
             <button class="dash-task-add-btn" onclick="addDashTodo()">＋ 追加</button>
@@ -1139,9 +1139,9 @@ function renderDashTasks(){
 
 function addDashTodo(){
   const text = document.getElementById('dash-todo-text').value.trim();
-  if(!text) return;
   const due = document.getElementById('dash-todo-due').value;
   const assignee = document.getElementById('dash-todo-assignee').value;
+  if(!text || !due || !assignee) return;
   const todos = loadTodos();
   todos.push({ text, due, assignee, done: false });
   saveTodos(todos);
