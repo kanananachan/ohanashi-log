@@ -996,6 +996,7 @@ function renderTodoBar(){
   const show   = [...sorted, ...noDue].slice(0, 3);
 
   const bubbles = document.getElementById('todo-bubbles');
+  if(!bubbles) return;
   bubbles.innerHTML = '';
   if(!show.length) return;
 
@@ -1082,14 +1083,14 @@ function toggleTodoDone(idx){
   const todos = loadTodos();
   if(todos[idx]) todos[idx].done = !todos[idx].done;
   saveTodos(todos);
-  renderTodoList(); renderTodoBar(); renderDashTasks();
+  renderDashTasks();
 }
 
 function deleteTodo(idx){
   const todos = loadTodos();
   todos.splice(idx, 1);
   saveTodos(todos);
-  renderTodoList(); renderTodoBar(); renderDashTasks();
+  renderDashTasks();
 }
 // ──────────────────────────────────────────────────────
 
