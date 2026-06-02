@@ -82,9 +82,15 @@ body {
 .dash-task-title { margin-bottom: 12px; }
 .dash-task-title img { display: block; width: auto; height: auto; max-width: 100%; }
 .dash-task-list { display: flex; flex-direction: column; gap: 8px; }
-.dash-task-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--ink); }
-.dash-task-item input[type=checkbox] { accent-color: var(--brown); flex-shrink: 0; width: 14px; height: 14px; }
+.dash-task-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--ink); cursor: pointer; border-radius: 6px; padding: 2px 4px; transition: background 0.1s; }
+.dash-task-item:hover { background: var(--paper2); }
+.dash-task-item input[type=checkbox] { accent-color: var(--brown); flex-shrink: 0; width: 14px; height: 14px; cursor: default; }
 .dash-task-item.done span { text-decoration: line-through; color: var(--muted); }
+.dash-task-edit { display: flex; flex-direction: column; gap: 5px; padding: 8px; background: var(--paper2); border-radius: 8px; border: 1px solid var(--border); margin: 2px 0; }
+.dash-task-edit input, .dash-task-edit select { font-size: 11px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--cream); color: var(--ink); font-family: 'Noto Sans JP', sans-serif; width: 100%; }
+.dash-task-edit-btns { display: flex; gap: 6px; }
+.dash-task-edit-save { flex: 1; font-size: 11px; padding: 5px; border: none; border-radius: 6px; background: var(--ink); color: var(--cream); cursor: pointer; font-family: 'Noto Sans JP', sans-serif; }
+.dash-task-edit-cancel { font-size: 11px; padding: 5px 10px; border: 1px solid var(--border); border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; font-family: 'Noto Sans JP', sans-serif; }
 .dash-task-add { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px; }
 .dash-task-add input, .dash-task-add select { font-size: 11px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--cream); color: var(--ink); font-family: 'Noto Sans JP', sans-serif; width: 100%; }
 .dash-task-add-btn { font-size: 11px; padding: 5px 10px; border: none; border-radius: 6px; background: var(--ink); color: var(--cream); cursor: pointer; width: 100%; font-family: 'Noto Sans JP', sans-serif; }
@@ -1143,12 +1149,60 @@ function renderDashTasks(){
       ? `<img src="${iconSrc}" style="width:18px;height:18px;border-radius:50%;object-fit:cover;flex-shrink:0">`
       : (t.assignee ? `<span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:${color};font-size:9px;font-weight:700;color:#fff;flex-shrink:0">${initial}</span>` : '');
     const dueTxt = t.due ? `<span style="font-size:10px;color:var(--muted);margin-left:4px">${t.due.slice(5).replace('-','/')}</span>` : '';
-    return `<div class="dash-task-item${t.done?' done':''}">
-      <input type="checkbox" ${t.done?'checked':''} onchange="toggleTodoDone(${origIdx})">
+    return `<div class="dash-task-item${t.done?' done':''}" onclick="editTodo(event,${origIdx})">
+      <input type="checkbox" ${t.done?'checked':''} onchange="toggleTodoDone(${origIdx})" onclick="event.stopPropagation()">
       ${icon}<span>${t.text}</span>${dueTxt}
-      <span onclick="deleteTodo(${origIdx})" style="margin-left:auto;cursor:pointer;color:var(--border);font-size:14px;line-height:1" onmouseover="this.style.color='#c0392b'" onmouseout="this.style.color='var(--border)'">×</span>
+      <span onclick="event.stopPropagation();deleteTodo(${origIdx})" style="margin-left:auto;cursor:pointer;color:var(--border);font-size:14px;line-height:1" onmouseover="this.style.color='#c0392b'" onmouseout="this.style.color='var(--border)'">×</span>
     </div>`;
   }).join('');
+}
+
+function editTodo(e, idx){
+  e.stopPropagation();
+  const todos = loadTodos();
+  const t = todos[idx];
+  if(!t) return;
+  const el = document.getElementById('dash-task-list');
+  // 既存の編集フォームを閉じる
+  el.querySelectorAll('.dash-task-edit').forEach(f => f.remove());
+  el.querySelectorAll('.dash-task-item').forEach(i => i.style.display='');
+
+  const item = e.currentTarget;
+  item.style.display = 'none';
+
+  const assigneeOpts = READERS.map(r =>
+    `<option value="${r}" ${r===t.assignee?'selected':''}>${r}</option>`
+  ).join('');
+
+  const form = document.createElement('div');
+  form.className = 'dash-task-edit';
+  form.innerHTML = `
+    <input type="text" class="edit-text" value="${t.text.replace(/"/g,'&quot;')}" placeholder="タスク内容">
+    <input type="date" class="edit-due" value="${t.due||''}">
+    <select class="edit-assignee"><option value="">担当者</option>${assigneeOpts}</select>
+    <div class="dash-task-edit-btns">
+      <button class="dash-task-edit-save" onclick="saveTodoEdit(${idx})">保存</button>
+      <button class="dash-task-edit-cancel" onclick="renderDashTasks()">キャンセル</button>
+    </div>
+  `;
+  item.insertAdjacentElement('afterend', form);
+  form.querySelector('.edit-text').focus();
+}
+
+function saveTodoEdit(idx){
+  const form = document.querySelector('.dash-task-edit');
+  if(!form) return;
+  const text = form.querySelector('.edit-text').value.trim();
+  const due  = form.querySelector('.edit-due').value;
+  const assignee = form.querySelector('.edit-assignee').value;
+  if(!text) return;
+  const todos = loadTodos();
+  if(!todos[idx]) return;
+  todos[idx].text = text;
+  todos[idx].due  = due;
+  todos[idx].assignee = assignee;
+  saveTodos(todos);
+  renderDashTasks();
 }
 
 function addDashTodo(){
