@@ -689,7 +689,7 @@ function addProgRow(existing){
   const div=document.createElement('div');
   div.className='prog-row';
   div.id='prow-'+id;
-  div.draggable = true;
+  div.draggable = false;
   div.innerHTML=`
     <div class="prog-drag-handle" title="ドラッグで並び替え">⠿</div>
     <div class="prog-row-body">
@@ -727,14 +727,19 @@ function addProgRow(existing){
   document.getElementById('prog-rows').appendChild(div);
   updateProgExtra(id);
 
-  // ドラッグ＆ドロップ
+  // ドラッグ＆ドロップ（ハンドルをつかんだときだけ有効）
   let dragSrc = null;
+  const handle = div.querySelector('.prog-drag-handle');
+  handle.addEventListener('mousedown', () => { div.draggable = true; });
+  handle.addEventListener('mouseup',   () => { div.draggable = false; });
   div.addEventListener('dragstart', e => {
+    if(!div.draggable) { e.preventDefault(); return; }
     dragSrc = div;
     div.classList.add('dragging');
     e.dataTransfer.effectAllowed = 'move';
   });
   div.addEventListener('dragend', () => {
+    div.draggable = false;
     div.classList.remove('dragging');
     document.querySelectorAll('#prog-rows .prog-row').forEach(r => r.classList.remove('drag-over'));
   });
