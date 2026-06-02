@@ -891,8 +891,8 @@ async function saveRecord(){
     const type=row.querySelector('.prog-type-sel').value;
     const session=row.querySelector('.prog-session-sel').value;
     const title=row.querySelector('.prog-title').value.trim();
-    if(!title && !tba) return;
     const tba=row.querySelector('.prog-tba').checked;
+    if(!title && !tba) return;
     const prog={type,title};
     if(tba) prog.tba=true;
     if(session) prog.session=session;
