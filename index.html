@@ -236,9 +236,10 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
 .form-section-head { display: flex; align-items: center; justify-content: space-between; font-size: 13px; font-weight: 500; color: var(--ink); margin: 16px 0 10px; padding-bottom: 6px; border-bottom: 2px solid var(--border); }
 .add-prog-btn { font-size: 12px; padding: 4px 14px; border: 1px solid var(--border); border-radius: 20px; background: var(--paper); color: var(--ink); cursor: pointer; font-family: 'Noto Sans JP', sans-serif; }
 .add-prog-btn:hover { background: var(--paper2); }
-.prog-row { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; background: var(--paper); display: flex; gap: 8px; align-items: flex-start; }
-.prog-row.drag-over { border-color: var(--brown); background: var(--brown-light); }
-.prog-row.dragging { opacity: 0.4; }
+.prog-row { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; background: var(--paper); display: flex; gap: 8px; align-items: flex-start; position: relative; transition: opacity 0.15s; }
+.prog-row.dragging { opacity: 0.35; }
+.prog-row.drop-above::before { content: ''; position: absolute; top: -3px; left: 0; right: 0; height: 3px; background: var(--brown); border-radius: 2px; z-index: 10; }
+.prog-row.drop-below::after  { content: ''; position: absolute; bottom: -3px; left: 0; right: 0; height: 3px; background: var(--brown); border-radius: 2px; z-index: 10; }
 .prog-drag-handle { cursor: grab; color: var(--border); font-size: 16px; padding-top: 6px; flex-shrink: 0; user-select: none; line-height: 1; }
 .prog-drag-handle:active { cursor: grabbing; }
 .prog-row-body { flex: 1; min-width: 0; }
@@ -819,37 +820,49 @@ function addProgRow(existing){
   updateProgExtra(id);
 
   // ドラッグ＆ドロップ（ハンドルをつかんだときだけ有効）
-  let dragSrc = null;
   const handle = div.querySelector('.prog-drag-handle');
   handle.addEventListener('mousedown', () => { div.draggable = true; });
-  handle.addEventListener('mouseup',   () => { div.draggable = false; });
+  document.addEventListener('mouseup', () => { div.draggable = false; }, { once: false });
   div.addEventListener('dragstart', e => {
     if(!div.draggable) { e.preventDefault(); return; }
-    dragSrc = div;
-    div.classList.add('dragging');
+    _dragSrc = div;
     e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', '');
+    setTimeout(() => div.classList.add('dragging'), 0);
   });
   div.addEventListener('dragend', () => {
     div.draggable = false;
     div.classList.remove('dragging');
-    document.querySelectorAll('#prog-rows .prog-row').forEach(r => r.classList.remove('drag-over'));
+    _clearDropIndicators();
+    _dragSrc = null;
   });
   div.addEventListener('dragover', e => {
     e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    if(dragSrc && dragSrc !== div) div.classList.add('drag-over');
+    if(!_dragSrc || _dragSrc === div) return;
+    _clearDropIndicators();
+    const rect = div.getBoundingClientRect();
+    const mid = rect.top + rect.height / 2;
+    if(e.clientY < mid) div.classList.add('drop-above');
+    else               div.classList.add('drop-below');
   });
-  div.addEventListener('dragleave', () => div.classList.remove('drag-over'));
+  div.addEventListener('dragleave', () => _clearDropIndicators());
   div.addEventListener('drop', e => {
     e.preventDefault();
-    div.classList.remove('drag-over');
-    if(!dragSrc || dragSrc === div) return;
+    if(!_dragSrc || _dragSrc === div) return;
+    const rect = div.getBoundingClientRect();
+    const mid = rect.top + rect.height / 2;
+    const insertBefore = e.clientY < mid;
     const container = document.getElementById('prog-rows');
-    const rows = [...container.querySelectorAll('.prog-row')];
-    const srcIdx = rows.indexOf(dragSrc);
-    const tgtIdx = rows.indexOf(div);
-    if(srcIdx < tgtIdx) container.insertBefore(dragSrc, div.nextSibling);
-    else container.insertBefore(dragSrc, div);
+    if(insertBefore) container.insertBefore(_dragSrc, div);
+    else             container.insertBefore(_dragSrc, div.nextSibling);
+    _clearDropIndicators();
+  });
+}
+
+let _dragSrc = null;
+function _clearDropIndicators(){
+  document.querySelectorAll('#prog-rows .prog-row').forEach(r => {
+    r.classList.remove('drop-above','drop-below');
   });
 }
 
