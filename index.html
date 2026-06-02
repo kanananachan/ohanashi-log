@@ -112,6 +112,8 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
 .cal-day.has-event:hover { background: var(--paper2) !important; }
 .cal-day.clickable { cursor: pointer; }
 .cal-day.clickable:hover { background: #f0f5f0 !important; }
+.cal-day.past-done { background: #f8f4ef !important; }
+.cal-day.past-done:hover { background: #ede9e3 !important; }
 .cal-kyugyo { font-size: 7px; text-align: center; color: #c0392b; font-weight: 500; margin-top: 1px; line-height: 1.2; }
 .cal-kyugyo-kari { color: #e07820; }
 .cal-popup { display: none; position: fixed; z-index: 1000; background: var(--cream); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; width: 300px; box-shadow: 0 4px 16px rgba(0,0,0,0.12); pointer-events: none; }
@@ -453,8 +455,12 @@ function renderCal(){
 
       let cls='cal-day';
       if(isToday) cls+=' today';
-      if(rec) cls+=' has-event';
-      else cls+=' clickable';
+      if(rec){
+        cls+=' has-event';
+        if(isPast) cls+=' past-done';
+      } else {
+        cls+=' clickable';
+      }
 
       const isKyugyo = KYUGYO.has(ds);
       const isKyugyoKari = KYUGYO_KARI.has(ds);
