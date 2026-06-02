@@ -109,10 +109,9 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
 .cal-dot.done { background: #b4b2a9; }
 .cal-dot.future { background: #e8c87a; }
 .cal-day.has-event { cursor: pointer; }
-.cal-day.has-event:hover { background: var(--paper2); }
-.cal-day.eigyo-open { cursor: pointer; }
-.cal-day.eigyo-open:hover { background: #f0f5f0; }
-.cal-add-hint { font-size: 8px; text-align: center; color: #ccc; margin-top: 1px; }
+.cal-day.has-event:hover { background: var(--paper2) !important; }
+.cal-day.clickable { cursor: pointer; }
+.cal-day.clickable:hover { background: #f0f5f0 !important; }
 .cal-popup { display: none; position: fixed; z-index: 1000; background: var(--cream); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; width: 300px; box-shadow: 0 4px 16px rgba(0,0,0,0.12); pointer-events: none; }
 .cal-popup.show { display: block; }
 .cal-popup-head { font-size: 12px; font-weight: 500; color: var(--brown); margin-bottom: 8px; padding-bottom: 6px; border-bottom: 0.5px solid var(--border); }
@@ -161,6 +160,21 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
 .btn-save:hover { opacity: 0.85; }
 .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
 .save-note { font-size: 11px; color: var(--muted); margin-right: auto; align-self: center; }
+
+/* 時間帯チェックボックス */
+.times-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.times-chip { position: relative; }
+.times-chip input[type="checkbox"] { position: absolute; opacity: 0; width: 0; height: 0; }
+.times-chip label { display: block; font-size: 12px; padding: 4px 12px; border: 1px solid var(--border); border-radius: 20px; background: var(--paper); color: var(--muted); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+.times-chip input:checked + label { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+.times-custom-input { font-size: 12px; padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--cream); color: var(--ink); font-family: 'Noto Sans JP', sans-serif; width: 5em; }
+
+/* 書籍検索 */
+.book-suggestions { margin-top: 4px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--cream); }
+.book-suggestion-item { display: block; width: 100%; text-align: left; padding: 7px 10px; font-size: 11px; color: var(--ink); background: none; border: none; border-bottom: 1px solid var(--border); cursor: pointer; font-family: 'Noto Sans JP', sans-serif; line-height: 1.4; }
+.book-suggestion-item:last-child { border-bottom: none; }
+.book-suggestion-item:hover { background: var(--paper2); }
+.book-searching { font-size: 10px; color: var(--muted); margin-top: 3px; }
 
 .footer { text-align: center; padding: 2rem; font-size: 11px; color: var(--border); }
 
@@ -284,6 +298,15 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
 
 <div class="footer">はらぺこ文庫 おはなしの時間 記録</div>
 <div class="cal-popup" id="cal-popup"></div>
+<datalist id="readers-list">
+  <option value="まるちゃん">
+  <option value="かなえちゃん">
+  <option value="そねちゃん">
+  <option value="ちゃこさん">
+  <option value="しーちゃん">
+  <option value="おりちゃん">
+  <option value="おおさん">
+</datalist>
 
 <!-- 入力モーダル -->
 <div class="modal-overlay" id="modal-overlay" onclick="overlayClick(event)">
@@ -300,12 +323,19 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
       </div>
       <div class="form-group">
         <label>開催回</label>
-        <input type="number" id="f-num" min="1" placeholder="例：12">
-        <span style="font-size:12px;color:var(--muted)">回</span>
+        <input type="number" id="f-num" min="1" placeholder="自動">
+        <span style="font-size:12px;color:var(--muted)">回（自動入力・変更可）</span>
       </div>
-      <div class="form-group">
-        <label>時間帯</label>
-        <input type="text" id="f-times" placeholder="例：10:00、14:00（複数は読点区切り）" style="flex:1;min-width:160px">
+      <div class="form-group" style="align-items:flex-start">
+        <label style="padding-top:5px">時間帯</label>
+        <div class="times-chips" id="f-times-group">
+          <span class="times-chip"><input type="checkbox" id="tc1" value="10:00"><label for="tc1">10:00</label></span>
+          <span class="times-chip"><input type="checkbox" id="tc2" value="15:00"><label for="tc2">15:00</label></span>
+          <span class="times-chip"><input type="checkbox" id="tc3" value="17:00"><label for="tc3">17:00</label></span>
+          <span class="times-chip"><input type="checkbox" id="tc4" value="17:45"><label for="tc4">17:45</label></span>
+          <span class="times-chip"><input type="checkbox" id="tc5" value="18:00"><label for="tc5">18:00</label></span>
+          <input type="text" class="times-custom-input" id="f-times-custom" placeholder="その他">
+        </div>
       </div>
       <div class="form-section-head">
         プログラム
@@ -328,6 +358,8 @@ const SHORT = {水曜日:'水',木曜日:'木',金曜日:'金'};
 const TYPE_LABEL = {katarite:'おはなし', ehon:'絵本', teasobi:'てあそび'};
 const TYPE_CLASS = {katarite:'badge-k', ehon:'badge-e', teasobi:'badge-t'};
 const EIGYO_DOW = new Set([3, 4, 5]); // 水=3 木=4 金=5
+const READERS = ['まるちゃん','かなえちゃん','そねちゃん','ちゃこさん','しーちゃん','おりちゃん','おおさん'];
+const KNOWN_TIMES = ['10:00','15:00','17:00','17:45','18:00'];
 
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwl2v-vdXh4twpKzimRRXumwa7iPeydEmrTtLruwYodpPmx1CwlrtVN0elqz3QYDlJ_/exec';
 let records = [];
@@ -408,24 +440,21 @@ function renderCal(){
       let cls='cal-day';
       if(isToday) cls+=' today';
       if(rec) cls+=' has-event';
-      else if(isEigyo) cls+=' eigyo-open';
-      else cls+=' blank';
+      else cls+=' clickable';
 
       let bg='';
       if(rec&&isFuture) bg='background:#fff8ee;';
-      else if(!rec&&!isEigyo&&!isToday) bg='background:#f8f4ef;';
+      else if(isPast&&!rec) bg='background:#f8f4ef;';
 
       let inner=`<div class="cal-day-num ${numCls}">${d}</div>`;
       if(rec){
         inner+=`<div class="cal-dot ${isFuture?'future':'done'}"></div><div style="font-size:8px;text-align:center;color:${isFuture?'#8a6020':'#5f5e5a'};margin-top:1px">第${rec.num}回</div>`;
-      } else if(isEigyo){
-        inner+=`<div class="cal-add-hint">＋</div>`;
       }
 
       let handlers='';
       if(rec){
         handlers=`onmouseenter="showPopup(event,'${ds}')" onmouseleave="hidePopup()" onclick="openEditModal('${ds}')"`;
-      } else if(isEigyo){
+      } else {
         handlers=`onclick="openNewModal('${ds}')"`;
       }
 
@@ -503,7 +532,18 @@ function _openModal(dateStr,rec,defaultNum){
   progRowId=0;
   document.getElementById('f-date').value=dateStr;
   document.getElementById('f-num').value=defaultNum||'';
-  document.getElementById('f-times').value=rec?(rec.times||[]).join('、'):'';
+  // 時間帯チェックボックスを復元
+  document.querySelectorAll('#f-times-group input[type="checkbox"]').forEach(cb=>cb.checked=false);
+  document.getElementById('f-times-custom').value='';
+  if(rec&&rec.times){
+    const customTimes=[];
+    rec.times.forEach(t=>{
+      const cb=document.querySelector(`#f-times-group input[value="${t}"]`);
+      if(cb) cb.checked=true;
+      else customTimes.push(t);
+    });
+    if(customTimes.length) document.getElementById('f-times-custom').value=customTimes.join('、');
+  }
   document.getElementById('modal-title').textContent=rec?`第${rec.num}回 編集`:'新しい記録を入力';
   onDateChange();
   document.getElementById('prog-rows').innerHTML='';
@@ -552,8 +592,10 @@ function addProgRow(existing){
       <button class="prog-remove" onclick="document.getElementById('prow-${id}').remove()">×</button>
     </div>
     <div class="prog-fields">
-      <input type="text" class="prog-title" placeholder="タイトル・わらべうた名" value="${esc(existing?.title)}">
-      <input type="text" class="prog-reader" placeholder="話し手（省略可）" value="${esc(existing?.reader)}">
+      <input type="text" class="prog-title" placeholder="タイトル・わらべうた名" value="${esc(existing?.title)}" oninput="onTitleInput(${id})">
+      <div class="book-searching" id="bsearch-${id}" style="display:none">書籍情報を検索中…</div>
+      <div class="book-suggestions" id="bsugg-${id}" style="display:none"></div>
+      <input type="text" class="prog-reader" list="readers-list" placeholder="話し手（省略可）" value="${esc(existing?.reader)}">
       <div class="prog-extra-grid" id="pextra-${id}">
         <input type="text" class="prog-source" placeholder="出典" value="${esc(existing?.source)}">
         <input type="text" class="prog-author" placeholder="作者" value="${esc(existing?.author)}">
@@ -580,8 +622,10 @@ async function saveRecord(){
     return;
   }
   const dow=getDow(dateStr);
-  const timesRaw=document.getElementById('f-times').value.trim();
-  const times=timesRaw?timesRaw.split(/[,、]/).map(t=>t.trim()).filter(Boolean):[];
+  const times=[];
+  document.querySelectorAll('#f-times-group input[type="checkbox"]:checked').forEach(cb=>times.push(cb.value));
+  const customTime=document.getElementById('f-times-custom').value.trim();
+  if(customTime) customTime.split(/[,、]/).forEach(t=>{if(t.trim())times.push(t.trim());});
   const progs=[];
   document.querySelectorAll('#prog-rows .prog-row').forEach(row=>{
     const type=row.querySelector('.prog-type-sel').value;
@@ -742,6 +786,80 @@ function renderSrch(){
       <td class="tbl-reader">${p.reader?hl(formalName(p.reader),q):''}</td>
     </tr>`;
   }).join('');
+}
+
+// ── 書籍自動検索 ──
+let bookSearchTimer = null;
+
+function onTitleInput(id){
+  clearTimeout(bookSearchTimer);
+  const row = document.getElementById('prow-'+id);
+  if(!row) return;
+  const type = row.querySelector('.prog-type-sel').value;
+  const title = row.querySelector('.prog-title').value.trim();
+  const sugg = document.getElementById('bsugg-'+id);
+  const status = document.getElementById('bsearch-'+id);
+  sugg.style.display='none';
+  status.style.display='none';
+  if(type==='teasobi' || title.length < 2) return;
+  bookSearchTimer = setTimeout(()=>searchBook(id, title), 700);
+}
+
+async function searchBook(id, title){
+  const status = document.getElementById('bsearch-'+id);
+  const sugg = document.getElementById('bsugg-'+id);
+  if(!status||!sugg) return;
+  status.style.display='block';
+  try {
+    const res = await fetch(`https://api.openbd.jp/v1/search?title=${encodeURIComponent(title)}&limit=5`);
+    const data = await res.json();
+    status.style.display='none';
+    if(!data||!data.length){ sugg.style.display='none'; return; }
+    sugg.innerHTML = data.slice(0,4).map((book,i)=>{
+      const s = book.summary||{};
+      return `<button class="book-suggestion-item" onclick="applyBook(${id},${i})" type="button">
+        <strong>${s.title||''}</strong>　${s.author||''}</button>`;
+    }).join('');
+    sugg._books = data.slice(0,4);
+    sugg.style.display='block';
+  } catch(e){
+    status.style.display='none';
+  }
+}
+
+function applyBook(id, idx){
+  const sugg = document.getElementById('bsugg-'+id);
+  const book = sugg._books && sugg._books[idx];
+  if(!book) return;
+  const s = book.summary||{};
+  const row = document.getElementById('prow-'+id);
+  // タイトルをセット（より正確なものに）
+  const titleEl = row.querySelector('.prog-title');
+  if(s.title) titleEl.value = s.title;
+  // 著者情報をパース
+  const parsed = parseOpenBDAuthor(s.author||'');
+  if(parsed.author) row.querySelector('.prog-author').value = parsed.author;
+  if(parsed.translator) row.querySelector('.prog-translator').value = parsed.translator;
+  if(parsed.illustrator) row.querySelector('.prog-illustrator').value = parsed.illustrator;
+  sugg.style.display='none';
+}
+
+function parseOpenBDAuthor(str){
+  // 例: "中川 李枝子 著；大村 百合子 絵" or "松岡 享子 著・訳"
+  const result={author:'',translator:'',illustrator:''};
+  if(!str) return result;
+  const parts = str.split(/[；;\/]/);
+  const authorParts=[], transParts=[], illusParts=[];
+  parts.forEach(p=>{
+    const t=p.trim();
+    if(/[絵画]/.test(t)) illusParts.push(t.replace(/[\s　]*[著作絵画訳編]+.*$/,'').trim());
+    else if(/訳/.test(t)) transParts.push(t.replace(/[\s　]*[著作絵画訳編]+.*$/,'').trim());
+    else if(/[著作]/.test(t)||parts.length===1) authorParts.push(t.replace(/[\s　]*[著作絵画訳編]+.*$/,'').trim());
+  });
+  result.author=authorParts.join('・');
+  result.translator=transParts.join('・');
+  result.illustrator=illusParts.join('・');
+  return result;
 }
 
 document.getElementById('cal-grid').innerHTML='<div class="empty">データを読み込み中…</div>';
