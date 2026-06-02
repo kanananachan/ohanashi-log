@@ -323,8 +323,8 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
       </div>
       <div class="form-group">
         <label>開催回</label>
-        <input type="number" id="f-num" min="1" placeholder="自動">
-        <span style="font-size:12px;color:var(--muted)">回（自動入力・変更可）</span>
+        <input type="number" id="f-num" min="1" placeholder="回数を入力">
+        <span style="font-size:12px;color:var(--muted)">回</span>
       </div>
       <div class="form-group" style="align-items:flex-start">
         <label style="padding-top:5px">時間帯</label>
@@ -518,8 +518,7 @@ let progRowId=0;
 
 function openNewModal(dateStr){
   hidePopup();
-  const nextN=records.length?Math.max(...records.map(r=>r.num))+1:1;
-  _openModal(dateStr,null,nextN);
+  _openModal(dateStr,null,null);
 }
 
 function openEditModal(dateStr){
@@ -811,16 +810,18 @@ async function searchBook(id, title){
   if(!status||!sugg) return;
   status.style.display='block';
   try {
-    const res = await fetch(`https://api.openbd.jp/v1/search?title=${encodeURIComponent(title)}&limit=5`);
+    const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(title)}&langRestrict=ja&maxResults=6&printType=books`);
     const data = await res.json();
     status.style.display='none';
-    if(!data||!data.length){ sugg.style.display='none'; return; }
-    sugg.innerHTML = data.slice(0,4).map((book,i)=>{
-      const s = book.summary||{};
+    const items = data.items||[];
+    if(!items.length){ sugg.style.display='none'; return; }
+    sugg.innerHTML = items.slice(0,5).map((item,i)=>{
+      const v = item.volumeInfo||{};
+      const authors = (v.authors||[]).join('、');
       return `<button class="book-suggestion-item" onclick="applyBook(${id},${i})" type="button">
-        <strong>${s.title||''}</strong>　${s.author||''}</button>`;
+        <strong>${v.title||''}</strong>　<span style="color:var(--muted)">${authors}</span></button>`;
     }).join('');
-    sugg._books = data.slice(0,4);
+    sugg._books = items.slice(0,5);
     sugg.style.display='block';
   } catch(e){
     status.style.display='none';
@@ -829,37 +830,24 @@ async function searchBook(id, title){
 
 function applyBook(id, idx){
   const sugg = document.getElementById('bsugg-'+id);
-  const book = sugg._books && sugg._books[idx];
-  if(!book) return;
-  const s = book.summary||{};
+  const item = sugg._books && sugg._books[idx];
+  if(!item) return;
+  const v = item.volumeInfo||{};
   const row = document.getElementById('prow-'+id);
-  // タイトルをセット（より正確なものに）
-  const titleEl = row.querySelector('.prog-title');
-  if(s.title) titleEl.value = s.title;
-  // 著者情報をパース
-  const parsed = parseOpenBDAuthor(s.author||'');
-  if(parsed.author) row.querySelector('.prog-author').value = parsed.author;
-  if(parsed.translator) row.querySelector('.prog-translator').value = parsed.translator;
-  if(parsed.illustrator) row.querySelector('.prog-illustrator').value = parsed.illustrator;
+  if(v.title) row.querySelector('.prog-title').value = v.title;
+  // Google Books の authors 配列から役割を推定
+  const authors = v.authors||[];
+  const desc = (v.description||'') + (v.subtitle||'');
+  // 著者・訳・絵を振り分け（簡易ルール）
+  if(authors.length >= 1) row.querySelector('.prog-author').value = authors[0];
+  if(authors.length >= 2){
+    // 2人目以降は訳または絵として候補表示
+    row.querySelector('.prog-illustrator').value = authors[1]||'';
+  }
+  if(authors.length >= 3){
+    row.querySelector('.prog-translator').value = authors[2]||'';
+  }
   sugg.style.display='none';
-}
-
-function parseOpenBDAuthor(str){
-  // 例: "中川 李枝子 著；大村 百合子 絵" or "松岡 享子 著・訳"
-  const result={author:'',translator:'',illustrator:''};
-  if(!str) return result;
-  const parts = str.split(/[；;\/]/);
-  const authorParts=[], transParts=[], illusParts=[];
-  parts.forEach(p=>{
-    const t=p.trim();
-    if(/[絵画]/.test(t)) illusParts.push(t.replace(/[\s　]*[著作絵画訳編]+.*$/,'').trim());
-    else if(/訳/.test(t)) transParts.push(t.replace(/[\s　]*[著作絵画訳編]+.*$/,'').trim());
-    else if(/[著作]/.test(t)||parts.length===1) authorParts.push(t.replace(/[\s　]*[著作絵画訳編]+.*$/,'').trim());
-  });
-  result.author=authorParts.join('・');
-  result.translator=transParts.join('・');
-  result.illustrator=illusParts.join('・');
-  return result;
 }
 
 document.getElementById('cal-grid').innerHTML='<div class="empty">データを読み込み中…</div>';
