@@ -689,7 +689,12 @@ function addProgRow(existing){
       <button class="prog-remove" onclick="document.getElementById('prow-${id}').remove()">×</button>
     </div>
     <div class="prog-fields">
-      <input type="text" class="prog-title" placeholder="タイトル・わらべうた名" value="${esc(existing?.title)}" oninput="onTitleInput(${id})">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <input type="text" class="prog-title" placeholder="タイトル・わらべうた名" value="${esc(existing?.title)}" oninput="onTitleInput(${id})" style="flex:1">
+        <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);white-space:nowrap;cursor:pointer;">
+          <input type="checkbox" class="prog-tba" ${existing?.tba?'checked':''} style="accent-color:var(--brown)"> 未定
+        </label>
+      </div>
       <div class="book-searching" id="bsearch-${id}" style="display:none">書籍情報を検索中…</div>
       <div class="book-suggestions" id="bsugg-${id}" style="display:none"></div>
       <input type="text" class="prog-reader" list="readers-list" placeholder="話し手（省略可）" value="${esc(existing?.reader)}">
@@ -754,7 +759,9 @@ async function saveRecord(){
     const session=row.querySelector('.prog-session-sel').value;
     const title=row.querySelector('.prog-title').value.trim();
     if(!title) return;
+    const tba=row.querySelector('.prog-tba').checked;
     const prog={type,title};
+    if(tba) prog.tba=true;
     if(session) prog.session=session;
     const reader=row.querySelector('.prog-reader').value.trim();
     if(reader) prog.reader=reader;
@@ -941,7 +948,7 @@ function renderAll(){
 function renderDow(){
   document.getElementById('dow-grid').innerHTML=EIGYO.map(d=>{
     const recs=records.filter(r=>r.dow===d).sort((a,b)=>b.num-a.num);
-    const byType=t=>recs.flatMap(r=>(r.progs||[]).filter(p=>p.type===t).map(p=>({...p,date:r.date})));
+    const byType=t=>recs.flatMap(r=>(r.progs||[]).filter(p=>p.type===t&&!p.tba).map(p=>({...p,date:r.date})));
     const dedup=items=>{
       const seen=new Set();
       return items.filter(p=>{const k=p.date+p.title;return seen.has(k)?false:seen.add(k);});
