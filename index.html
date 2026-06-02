@@ -302,11 +302,8 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
 .times-custom-input { font-size: 12px; padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--cream); color: var(--ink); font-family: 'Noto Sans JP', sans-serif; width: 5em; }
 
 /* 書籍検索 */
-.book-suggestions { margin-top: 4px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--cream); }
-.book-suggestion-item { display: block; width: 100%; text-align: left; padding: 7px 10px; font-size: 11px; color: var(--ink); background: none; border: none; border-bottom: 1px solid var(--border); cursor: pointer; font-family: 'Noto Sans JP', sans-serif; line-height: 1.4; }
-.book-suggestion-item:last-child { border-bottom: none; }
-.book-suggestion-item:hover { background: var(--paper2); }
-.book-searching { font-size: 10px; color: var(--muted); margin-top: 3px; }
+.prog-search-btn { font-size: 14px; padding: 3px 7px; border: 1px solid var(--border); border-radius: 6px; background: var(--cream); cursor: pointer; flex-shrink: 0; line-height: 1; }
+.prog-search-btn:hover { background: var(--paper2); }
 
 .footer { text-align: center; padding: 2rem; font-size: 11px; color: var(--border); }
 
@@ -806,13 +803,12 @@ function addProgRow(existing){
     </div>
     <div class="prog-fields">
       <div style="display:flex;align-items:center;gap:8px;">
-        <input type="text" class="prog-title" placeholder="タイトル・わらべうた名" value="${esc(existing?.title)}" oninput="onTitleInput(${id})" style="flex:1">
+        <input type="text" class="prog-title" placeholder="タイトル・わらべうた名" value="${esc(existing?.title)}" style="flex:1">
+        <button type="button" class="prog-search-btn" onclick="openBookSearch(this)" title="NDLで検索">🔍</button>
         <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);white-space:nowrap;cursor:pointer;">
           <input type="checkbox" class="prog-tba" ${existing?.tba?'checked':''} style="accent-color:var(--brown)"> 未定
         </label>
       </div>
-      <div class="book-searching" id="bsearch-${id}" style="display:none">書籍情報を検索中…</div>
-      <div class="book-suggestions" id="bsugg-${id}" style="display:none"></div>
       <input type="text" class="prog-reader" list="readers-list" placeholder="話し手（省略可）" value="${esc(existing?.reader)}">
       <div class="prog-extra-grid" id="pextra-${id}">
         <input type="text" class="prog-source" placeholder="出典" value="${esc(existing?.source)}">
@@ -1361,93 +1357,13 @@ function renderSrch(){
   }).join('');
 }
 
-// ── 書籍自動検索 ──
-let bookSearchTimer = null;
-
-function onTitleInput(id){
-  clearTimeout(bookSearchTimer);
-  const row = document.getElementById('prow-'+id);
+// ── 書籍検索（NDL・別タブ） ──
+function openBookSearch(btn){
+  const row = btn.closest('.prog-row');
   if(!row) return;
-  const type = row.querySelector('.prog-type-sel').value;
   const title = row.querySelector('.prog-title').value.trim();
-  const sugg = document.getElementById('bsugg-'+id);
-  const status = document.getElementById('bsearch-'+id);
-  sugg.style.display='none';
-  status.style.display='none';
-  if(type==='teasobi' || title.length < 2) return;
-  bookSearchTimer = setTimeout(()=>searchBook(id, title), 700);
-}
-
-async function searchBook(id, title){
-  const status = document.getElementById('bsearch-'+id);
-  const sugg = document.getElementById('bsugg-'+id);
-  if(!status||!sugg) return;
-  status.style.display='block';
-  sugg.style.display='none';
-  try {
-    // OpenBD（日本の書籍専用DB）で検索
-    const res = await fetch(`https://api.openbd.jp/v1/search?title=${encodeURIComponent(title)}&limit=6`);
-    const data = await res.json();
-    status.style.display='none';
-    if(!data||!data.length) return;
-
-    // 1件目を自動入力
-    applyOpenBD(id, data[0]);
-
-    // 他の候補も表示
-    sugg._books = data.slice(0,5);
-    sugg.innerHTML = '<div style="font-size:10px;color:var(--muted);padding:5px 10px 3px">違う場合は選んでください：</div>'
-      + data.slice(0,5).map((book,i)=>{
-        const s = book.summary||{};
-        return `<button class="book-suggestion-item" onclick="applyBook(${id},${i})" type="button">
-          <strong>${s.title||''}</strong>　<span style="color:var(--muted)">${s.author||''}</span></button>`;
-      }).join('');
-    sugg.style.display='block';
-  } catch(e){
-    status.style.display='none';
-    console.warn('書籍検索エラー:', e);
-  }
-}
-
-function parseJPAuthor(str){
-  // 例: "中川 李枝子 著；大村 百合子 絵" / "松岡 享子 著・訳"
-  const result={author:'', illustrator:'', translator:''};
-  if(!str) return result;
-  const parts = str.split(/[；;]/);
-  parts.forEach(p=>{
-    const t = p.trim();
-    const name = t.replace(/[\s　]*[著文作絵画訳編]+\s*$/, '').trim();
-    if(!name) return;
-    if(/[絵画]/.test(t)) result.illustrator = result.illustrator||name;
-    else if(/訳/.test(t)) result.translator = result.translator||name;
-    else result.author = result.author||name;
-  });
-  return result;
-}
-
-function applyOpenBD(id, book){
-  if(!book) return;
-  const s = book.summary||{};
-  const row = document.getElementById('prow-'+id);
-  if(!row) return;
-  if(s.title) row.querySelector('.prog-title').value = s.title;
-  const parsed = parseJPAuthor(s.author||'');
-  row.querySelector('.prog-author').value = parsed.author;
-  row.querySelector('.prog-illustrator').value = parsed.illustrator;
-  row.querySelector('.prog-translator').value = parsed.translator;
-}
-
-function applyBook(id, idx){
-  const sugg = document.getElementById('bsugg-'+id);
-  const book = sugg._books && sugg._books[idx];
-  if(!book) return;
-  const row = document.getElementById('prow-'+id);
-  if(!row) return;
-  row.querySelector('.prog-author').value = '';
-  row.querySelector('.prog-illustrator').value = '';
-  row.querySelector('.prog-translator').value = '';
-  applyOpenBD(id, book);
-  sugg.style.display='none';
+  const q = encodeURIComponent(title || '');
+  window.open(`https://iss.ndl.go.jp/books?search_field=title&query=${q}`, '_blank');
 }
 
 document.getElementById('cal-grid').innerHTML='<div class="empty">データを読み込み中…</div>';
