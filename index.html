@@ -23,36 +23,75 @@
   --teasobi-light: #fef3e0;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Noto Sans JP', sans-serif; background: var(--paper); color: var(--ink); min-height: 100vh; }
+body { font-family: 'Noto Sans JP', sans-serif; background: #e8e4dc; color: var(--ink); min-height: 100vh; display: flex; }
 
-.header { background: var(--cream); border-bottom: 1px solid var(--border); padding: 1.25rem 1.5rem; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.header-title { font-family: 'Zen Kurenaido', serif; font-size: 22px; color: var(--ink); letter-spacing: 0.05em; }
-.header-sub { font-size: 12px; color: var(--muted); }
-.header-count { font-size: 12px; color: var(--muted); margin-left: auto; }
-.todo-toggle-btn { display: inline-flex; align-items: center; gap: 3px; font-size: 12px; font-family: 'Noto Sans JP', sans-serif; padding: 3px 10px 3px 10px; border: 1px solid var(--border); border-radius: 14px; background: var(--paper2); color: var(--ink); cursor: pointer; white-space: nowrap; transition: background 0.15s; }
-.todo-toggle-btn:hover { background: var(--border); }
-.todo-toggle-btn .arrow { font-size: 9px; transition: transform 0.2s; display: inline-block; }
-.todo-toggle-btn.open .arrow { transform: rotate(180deg); }
+/* ── サイドバー ── */
+.sidebar { width: 80px; min-height: 100vh; background: #e2e8a0; display: flex; flex-direction: column; align-items: center; padding: 24px 0 16px; flex-shrink: 0; position: sticky; top: 0; }
+.sidebar-title { font-family: 'Zen Kurenaido', serif; writing-mode: vertical-rl; text-orientation: mixed; font-size: 13px; color: var(--ink); letter-spacing: 0.15em; line-height: 1.6; text-align: center; flex: 1; }
+.sidebar-title .lib { font-size: 11px; color: var(--muted); margin-bottom: 8px; display: block; }
+.sidebar-title .ttl { font-size: 15px; }
+.sidebar-date { font-size: 10px; color: var(--muted); writing-mode: vertical-rl; letter-spacing: 0.08em; margin-top: 12px; }
 
-/* 顔アイコン＋吹き出し */
-/* TODO バー */
-.todo-speaker { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.todo-bubbles { display: flex; flex-direction: column; gap: 4px; }
-.todo-bubble { display: flex; align-items: center; gap: 6px; background: #fff; border: 1px solid var(--border); border-radius: 20px; padding: 3px 10px 3px 4px; font-size: 11px; color: var(--ink); white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,0.07); line-height: 1.5; }
-.todo-bubble.overdue { border-color: #c0392b; background: #fff5f5; color: #c0392b; }
-.todo-bubble.today   { border-color: #c07a2a; background: #fff9f0; color: #c07a2a; }
-.todo-bubble-icon { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; flex-shrink: 0; display: block; }
-.todo-bubble-icon.initial { display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; }
-.todo-bubble-more { font-size: 10px; color: var(--muted); padding: 0 4px; }
+/* ── コンテンツ ── */
+.content-wrap { flex: 1; display: flex; flex-direction: column; min-width: 0; }
 
-.nav { display: flex; gap: 4px; padding: 0.75rem 1.5rem; background: var(--cream); border-bottom: 1px solid var(--border); overflow-x: auto; }
-.navbtn { padding: 5px 16px; font-size: 12px; font-family: 'Noto Sans JP', sans-serif; border: 1px solid var(--border); border-radius: 20px; background: transparent; color: var(--muted); cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+/* ── ナビ ── */
+.nav { display: flex; gap: 4px; padding: 0.75rem 1.25rem; background: transparent; overflow-x: auto; }
+.navbtn { padding: 5px 16px; font-size: 12px; font-family: 'Noto Sans JP', sans-serif; border: 1px solid var(--border); border-radius: 20px; background: rgba(255,255,255,0.6); color: var(--muted); cursor: pointer; white-space: nowrap; transition: all 0.15s; }
 .navbtn:hover { background: var(--paper2); color: var(--ink); }
 .navbtn.on { background: var(--ink); color: var(--cream); border-color: var(--ink); }
 
-.main { padding: 1.25rem 1.5rem; max-width: 1200px; margin: 0 auto; }
+.main { padding: 0 1.25rem 1.5rem; flex: 1; }
 .view { display: none; }
 .view.on { display: block; }
+
+/* ── ダッシュボード（カレンダービューのトップ） ── */
+.dashboard { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+
+/* タスクパネル */
+.dash-task-panel { background: rgba(255,255,255,0.75); border-radius: 12px; padding: 16px 18px; }
+.dash-task-title { font-size: 13px; font-weight: 500; color: var(--muted); margin-bottom: 12px; letter-spacing: 0.05em; }
+.dash-task-list { display: flex; flex-direction: column; gap: 8px; }
+.dash-task-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--ink); }
+.dash-task-item input[type=checkbox] { accent-color: var(--brown); flex-shrink: 0; width: 14px; height: 14px; }
+.dash-task-item.done span { text-decoration: line-through; color: var(--muted); }
+.dash-task-add { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px; }
+.dash-task-add input, .dash-task-add select { font-size: 11px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--cream); color: var(--ink); font-family: 'Noto Sans JP', sans-serif; width: 100%; }
+.dash-task-add-btn { font-size: 11px; padding: 5px 10px; border: none; border-radius: 6px; background: var(--ink); color: var(--cream); cursor: pointer; width: 100%; font-family: 'Noto Sans JP', sans-serif; }
+.dash-task-add-btn:hover { opacity: 0.85; }
+
+/* 今週のプログラム */
+.dash-program-wrap { display: flex; align-items: center; justify-content: center; }
+.dash-program-frame { position: relative; background: #f0ece4; border: 2px solid #ccc5b5; border-radius: 18px; padding: 36px 20px 20px; width: 100%; min-height: 200px; box-shadow: inset 0 0 0 4px rgba(255,255,255,0.5); }
+.dash-program-frame::before { content: ''; position: absolute; inset: 5px; border: 1px dashed #ccc5b5; border-radius: 13px; pointer-events: none; }
+.dash-ribbon { position: absolute; top: -22px; left: 50%; transform: translateX(-50%); font-size: 32px; line-height: 1; }
+.dash-program-label { text-align: center; font-family: 'Zen Kurenaido', serif; font-size: 15px; color: var(--ink); margin-bottom: 14px; }
+.dash-prog-item { text-align: center; margin-bottom: 10px; }
+.dash-prog-item:last-child { margin-bottom: 0; }
+
+/* ミニカレンダー */
+.dash-mini-cal { background: rgba(255,255,255,0.75); border-radius: 12px; padding: 14px; }
+.dash-mini-cal-head { font-size: 16px; font-family: 'Zen Kurenaido', serif; color: var(--ink); margin-bottom: 10px; }
+.dash-mini-dow { display: grid; grid-template-columns: repeat(7,1fr); text-align: center; font-size: 9px; color: var(--muted); margin-bottom: 4px; }
+.dash-mini-days { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; }
+.dash-mini-day { text-align: center; font-size: 10px; padding: 3px 1px; border-radius: 4px; line-height: 1.4; color: var(--ink); }
+.dash-mini-day.blank { }
+.dash-mini-day.today { background: var(--brown); color: #fff; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+.dash-mini-day.has-rec { font-weight: 600; color: var(--brown); }
+.dash-mini-day.past { color: #bbb; }
+.dash-mini-day.sun { color: #c0392b; }
+.dash-mini-day.sat { color: #2980b9; }
+.dash-mini-day.today.sun, .dash-mini-day.today.sat { color: #fff; }
+
+/* TODO ヘッダーバー（サイドバー移行につき非表示） */
+.header { display: none; }
+.todo-toggle-btn { display: none; }
+.todo-speaker { display: none; }
+.todo-bubbles { display: none; }
+.todo-bubble { display: none; }
+.todo-bubble-icon { display: none; }
+.todo-bubble-more { display: none; }
+.header-count { display: none; }
 
 /* 曜日ビュー */
 .dow-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; }
@@ -235,8 +274,10 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
 .footer { text-align: center; padding: 2rem; font-size: 11px; color: var(--border); }
 
 @media (max-width: 640px) {
-  .header { padding: 0.75rem 1rem; }
-  .header-title { font-size: 17px; }
+  .sidebar { width: 52px; }
+  .sidebar-title { font-size: 10px; }
+  .sidebar-title .ttl { font-size: 12px; }
+  .dashboard { grid-template-columns: 1fr; }
   .nav { padding: 0.5rem 0.75rem; gap: 6px; }
   .navbtn { padding: 5px 10px; font-size: 11px; }
   .main { padding: 0.75rem 0.75rem; }
@@ -262,23 +303,27 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
 </head>
 <body>
 
-<div class="header">
-  <div class="header-title">はらぺこ文庫　おはなしの時間</div>
-  <button class="todo-toggle-btn" id="todo-toggle-btn" onclick="toggleTodoPanel()">TODO <span class="arrow">▼</span></button>
-  <div class="todo-speaker" id="todo-bar">
-    <div class="todo-bubbles" id="todo-bubbles"></div>
+<div class="header"><div class="header-count" id="hcount"></div></div>
+
+<!-- サイドバー -->
+<div class="sidebar">
+  <div class="sidebar-title">
+    <span class="lib">はらぺこ文庫</span>
+    <span class="ttl">おはなしの時間</span>
   </div>
-  <div class="header-count" id="hcount"></div>
+  <div class="sidebar-date" id="sidebar-date"></div>
 </div>
 
-<div class="nav">
-  <button class="navbtn on" onclick="sw('cal',this)">年間カレンダー</button>
-  <button class="navbtn" onclick="sw('num',this)">開催情報</button>
-  <button class="navbtn" onclick="sw('dow',this)">曜日ごと作品</button>
-  <button class="navbtn" onclick="sw('srch',this)">データ一覧／検索</button>
-</div>
+<!-- コンテンツ -->
+<div class="content-wrap">
+  <div class="nav">
+    <button class="navbtn on" onclick="sw('cal',this)">年間カレンダー</button>
+    <button class="navbtn" onclick="sw('num',this)">開催情報</button>
+    <button class="navbtn" onclick="sw('dow',this)">曜日ごと作品</button>
+    <button class="navbtn" onclick="sw('srch',this)">データ一覧／検索</button>
+  </div>
 
-<div class="main">
+  <div class="main">
 
   <!-- 曜日ビュー -->
   <div class="view" id="v-dow">
@@ -345,30 +390,61 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
 
   <!-- 年間カレンダー -->
   <div class="view on" id="v-cal">
-    <!-- TODOパネル -->
-    <div class="todo-panel" id="todo-panel" style="display:none">
-      <div class="todo-panel-title">
-        <span>📝 やることリスト</span>
+    <!-- ダッシュボード -->
+    <div class="dashboard">
+      <!-- タスク -->
+      <div class="dash-task-panel">
+        <div class="dash-task-title">タスク</div>
+        <div class="dash-task-list" id="dash-task-list"></div>
+        <div class="dash-task-add">
+          <input id="dash-todo-text" type="text" placeholder="タスクを追加…" onkeydown="if(event.key==='Enter')addDashTodo()">
+          <input id="dash-todo-due"  type="date">
+          <select id="dash-todo-assignee"><option value="">担当者</option></select>
+          <button class="dash-task-add-btn" onclick="addDashTodo()">＋ 追加</button>
+        </div>
       </div>
-      <div class="todo-list" id="todo-list"></div>
-      <div class="todo-add-form">
-        <input name="text" id="todo-text" type="text" placeholder="タスクを入力…" />
-        <input name="due"  id="todo-due"  type="date" />
-        <select id="todo-assignee">
-          <option value="">担当者</option>
-        </select>
-        <button class="todo-add-btn" onclick="addTodo()">追加</button>
+
+      <!-- 今週のプログラム -->
+      <div class="dash-program-wrap">
+        <div class="dash-program-frame">
+          <div class="dash-ribbon">🎀</div>
+          <div class="dash-program-label">今週のプログラム</div>
+          <div id="dash-program-body"></div>
+        </div>
+      </div>
+
+      <!-- ミニカレンダー -->
+      <div class="dash-mini-cal">
+        <div class="dash-mini-cal-head" id="dash-mini-cal-head"></div>
+        <div class="dash-mini-dow">
+          <span>月</span><span>火</span><span>水</span><span>木</span><span>金</span>
+          <span style="color:#2980b9">土</span><span style="color:#c0392b">日</span>
+        </div>
+        <div class="dash-mini-days" id="dash-mini-days"></div>
       </div>
     </div>
+
+    <!-- 年間カレンダー本体 -->
     <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:1.2rem">
       <button class="cal-year-btn" onclick="changeCalYear(-1)">◀</button>
       <span class="cal-year-label" id="cal-year-label">2026</span>
       <button class="cal-year-btn" onclick="changeCalYear(1)">▶</button>
     </div>
     <div id="cal-grid"></div>
+
+    <!-- TODOパネル（非表示・互換性のため残す） -->
+    <div class="todo-panel" id="todo-panel" style="display:none">
+      <div class="todo-list" id="todo-list"></div>
+      <div class="todo-add-form">
+        <input id="todo-text" type="text"><input id="todo-due" type="date">
+        <select id="todo-assignee"><option value="">担当者</option></select>
+        <button onclick="addTodo()">追加</button>
+      </div>
+    </div>
   </div>
 
-</div>
+  </div><!-- .main -->
+</div><!-- .content-wrap -->
 
 <div class="footer">はらぺこ文庫 おはなしの時間 記録</div>
 <div class="cal-popup" id="cal-popup"></div>
@@ -865,11 +941,14 @@ function readerInitial(name){ return name ? name[0] : '？'; }
 
 function initTodo(){
   // セレクトボックスにREADERSを追加
-  const sel = document.getElementById('todo-assignee');
-  READERS.forEach(r => {
-    const opt = document.createElement('option');
-    opt.value = r; opt.textContent = r;
-    sel.appendChild(opt);
+  ['todo-assignee','dash-todo-assignee'].forEach(id=>{
+    const sel = document.getElementById(id);
+    if(!sel) return;
+    READERS.forEach(r => {
+      const opt = document.createElement('option');
+      opt.value = r; opt.textContent = r;
+      sel.appendChild(opt);
+    });
   });
   renderTodoBar();
   renderTodoList();
@@ -978,24 +1057,124 @@ function toggleTodoDone(idx){
   const todos = loadTodos();
   if(todos[idx]) todos[idx].done = !todos[idx].done;
   saveTodos(todos);
-  renderTodoList();
-  renderTodoBar();
+  renderTodoList(); renderTodoBar(); renderDashTasks();
 }
 
 function deleteTodo(idx){
   const todos = loadTodos();
   todos.splice(idx, 1);
   saveTodos(todos);
-  renderTodoList();
-  renderTodoBar();
+  renderTodoList(); renderTodoBar(); renderDashTasks();
 }
 // ──────────────────────────────────────────────────────
 
 function renderAll(){
   const today=new Date(); today.setHours(0,0,0,0);
-  document.getElementById('hcount').textContent=`${today.getMonth()+1}月${today.getDate()}日現在`;
+  // サイドバー日付
+  const sd = document.getElementById('sidebar-date');
+  if(sd) sd.textContent = `${today.getFullYear()}.${String(today.getMonth()+1).padStart(2,'0')}.${String(today.getDate()).padStart(2,'0')}`;
   initCalYear();
   renderDow(); renderNum(); renderSrch(); renderCal();
+  renderDashboard();
+}
+
+function renderDashboard(){
+  renderDashTasks();
+  renderDashProgram();
+  renderDashMiniCal();
+}
+
+function renderDashTasks(){
+  const today = new Date(); today.setHours(0,0,0,0);
+  const todos = loadTodos();
+  const el = document.getElementById('dash-task-list');
+  if(!el) return;
+  const sorted = [
+    ...todos.filter(t=>!t.done).sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999')),
+    ...todos.filter(t=>t.done)
+  ];
+  if(!sorted.length){ el.innerHTML='<div style="font-size:11px;color:var(--muted)">タスクはありません</div>'; return; }
+  el.innerHTML = sorted.map((t,i)=>{
+    const origIdx = todos.indexOf(t);
+    const color = t.assignee ? readerColor(t.assignee) : '#ccc';
+    const initial = t.assignee ? readerInitial(t.assignee) : '';
+    const iconSrc = t.assignee && READER_ICONS[t.assignee];
+    const icon = iconSrc
+      ? `<img src="${iconSrc}" style="width:18px;height:18px;border-radius:50%;object-fit:cover;flex-shrink:0">`
+      : (t.assignee ? `<span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:${color};font-size:9px;font-weight:700;color:#fff;flex-shrink:0">${initial}</span>` : '');
+    const dueTxt = t.due ? `<span style="font-size:10px;color:var(--muted);margin-left:4px">${t.due.slice(5).replace('-','/')}</span>` : '';
+    return `<div class="dash-task-item${t.done?' done':''}">
+      <input type="checkbox" ${t.done?'checked':''} onchange="toggleTodoDone(${origIdx})">
+      ${icon}<span>${t.text}</span>${dueTxt}
+      <span onclick="deleteTodo(${origIdx})" style="margin-left:auto;cursor:pointer;color:var(--border);font-size:14px;line-height:1" onmouseover="this.style.color='#c0392b'" onmouseout="this.style.color='var(--border)'">×</span>
+    </div>`;
+  }).join('');
+}
+
+function addDashTodo(){
+  const text = document.getElementById('dash-todo-text').value.trim();
+  if(!text) return;
+  const due = document.getElementById('dash-todo-due').value;
+  const assignee = document.getElementById('dash-todo-assignee').value;
+  const todos = loadTodos();
+  todos.push({ text, due, assignee, done: false });
+  saveTodos(todos);
+  document.getElementById('dash-todo-text').value = '';
+  document.getElementById('dash-todo-due').value = '';
+  document.getElementById('dash-todo-assignee').value = '';
+  renderDashTasks();
+}
+
+function renderDashProgram(){
+  const el = document.getElementById('dash-program-body');
+  if(!el) return;
+  const today = new Date(); today.setHours(0,0,0,0);
+  // 今週（月〜日）の範囲
+  const dow = today.getDay(); // 0=Sun
+  const monday = new Date(today); monday.setDate(today.getDate() - (dow===0?6:dow-1));
+  const sunday = new Date(monday); sunday.setDate(monday.getDate()+6);
+  const fmt = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const weekRecs = records.filter(r => r.date >= fmt(monday) && r.date <= fmt(sunday));
+  if(!weekRecs.length){
+    el.innerHTML = '<div style="text-align:center;font-size:12px;color:var(--muted);padding:8px 0">今週の予定はありません</div>';
+    return;
+  }
+  el.innerHTML = weekRecs.map(r=>(r.progs||[]).map(p=>`
+    <div class="dash-prog-item">
+      <span class="${TYPE_CLASS[p.type]||'badge-k'}" style="font-size:11px;padding:2px 10px;border-radius:10px;display:inline-block;margin-bottom:4px">${TYPE_LABEL[p.type]||p.type}</span>
+      <div style="font-size:13px;font-weight:500">${p.tba?'（未定）':p.title}</div>
+      ${p.reader&&!p.tba?`<div style="font-size:11px;color:var(--brown)">${p.reader}</div>`:''}
+    </div>`).join('')).join('');
+}
+
+function renderDashMiniCal(){
+  const headEl = document.getElementById('dash-mini-cal-head');
+  const daysEl = document.getElementById('dash-mini-days');
+  if(!headEl||!daysEl) return;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const y = today.getFullYear(), m = today.getMonth();
+  headEl.textContent = `${m+1}月`;
+  const firstDay = new Date(y, m, 1).getDay(); // 0=Sun
+  const startBlank = firstDay===0 ? 6 : firstDay-1; // 月始まり
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  let html = '';
+  for(let i=0;i<startBlank;i++) html += '<div class="dash-mini-day blank"></div>';
+  for(let d=1;d<=daysInMonth;d++){
+    const date = new Date(y,m,d);
+    const ds = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday = date.getTime()===today.getTime();
+    const hasRec = records.some(r=>r.date===ds);
+    const isPast = date < today;
+    const wd = date.getDay();
+    let cls = 'dash-mini-day';
+    if(isToday) cls+=' today';
+    else if(isPast) cls+=' past';
+    if(wd===0) cls+=' sun';
+    if(wd===6) cls+=' sat';
+    if(hasRec&&!isToday) cls+=' has-rec';
+    html += `<div class="${cls}">${d}</div>`;
+  }
+  daysEl.innerHTML = html;
 }
 
 function renderDow(){
