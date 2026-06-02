@@ -32,6 +32,7 @@ body {
   background-color: #c8c4bc;
   background-image: radial-gradient(circle, #9e9a94 1.5px, transparent 1.5px);
   background-size: 18px 18px;
+  width: 100%;
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -1371,6 +1372,8 @@ function applyBook(id, idx){
 document.getElementById('cal-grid').innerHTML='<div class="empty">データを読み込み中…</div>';
 
 loadFromSheet().then(()=>{
+  renderAll();
+}).catch(()=>{
   renderAll();
 });
 initTodo();
