@@ -166,7 +166,12 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
 .form-section-head { display: flex; align-items: center; justify-content: space-between; font-size: 13px; font-weight: 500; color: var(--ink); margin: 16px 0 10px; padding-bottom: 6px; border-bottom: 2px solid var(--border); }
 .add-prog-btn { font-size: 12px; padding: 4px 14px; border: 1px solid var(--border); border-radius: 20px; background: var(--paper); color: var(--ink); cursor: pointer; font-family: 'Noto Sans JP', sans-serif; }
 .add-prog-btn:hover { background: var(--paper2); }
-.prog-row { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; background: var(--paper); }
+.prog-row { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; background: var(--paper); display: flex; gap: 8px; align-items: flex-start; }
+.prog-row.drag-over { border-color: var(--brown); background: var(--brown-light); }
+.prog-row.dragging { opacity: 0.4; }
+.prog-drag-handle { cursor: grab; color: var(--border); font-size: 16px; padding-top: 6px; flex-shrink: 0; user-select: none; line-height: 1; }
+.prog-drag-handle:active { cursor: grabbing; }
+.prog-row-body { flex: 1; min-width: 0; }
 .prog-row-top { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
 .prog-type-sel, .prog-session-sel { font-size: 12px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--cream); color: var(--ink); font-family: 'Noto Sans JP', sans-serif; }
 .prog-remove { margin-left: auto; background: none; border: none; color: var(--muted); font-size: 18px; cursor: pointer; padding: 0 4px; line-height: 1; }
@@ -674,7 +679,10 @@ function addProgRow(existing){
   const div=document.createElement('div');
   div.className='prog-row';
   div.id='prow-'+id;
+  div.draggable = true;
   div.innerHTML=`
+    <div class="prog-drag-handle" title="ドラッグで並び替え">⠿</div>
+    <div class="prog-row-body">
     <div class="prog-row-top">
       <select class="prog-type-sel" onchange="updateProgExtra(${id})">
         <option value="katarite"${type==='katarite'?' selected':''}>おはなし</option>
@@ -704,9 +712,39 @@ function addProgRow(existing){
         <input type="text" class="prog-translator" placeholder="訳" value="${esc(existing?.translator)}">
         <input type="text" class="prog-illustrator" placeholder="絵" value="${esc(existing?.illustrator)}">
       </div>
+    </div>
     </div>`;
   document.getElementById('prog-rows').appendChild(div);
   updateProgExtra(id);
+
+  // ドラッグ＆ドロップ
+  let dragSrc = null;
+  div.addEventListener('dragstart', e => {
+    dragSrc = div;
+    div.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  });
+  div.addEventListener('dragend', () => {
+    div.classList.remove('dragging');
+    document.querySelectorAll('#prog-rows .prog-row').forEach(r => r.classList.remove('drag-over'));
+  });
+  div.addEventListener('dragover', e => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if(dragSrc && dragSrc !== div) div.classList.add('drag-over');
+  });
+  div.addEventListener('dragleave', () => div.classList.remove('drag-over'));
+  div.addEventListener('drop', e => {
+    e.preventDefault();
+    div.classList.remove('drag-over');
+    if(!dragSrc || dragSrc === div) return;
+    const container = document.getElementById('prog-rows');
+    const rows = [...container.querySelectorAll('.prog-row')];
+    const srcIdx = rows.indexOf(dragSrc);
+    const tgtIdx = rows.indexOf(div);
+    if(srcIdx < tgtIdx) container.insertBefore(dragSrc, div.nextSibling);
+    else container.insertBefore(dragSrc, div);
+  });
 }
 
 function updateProgExtra(id){
