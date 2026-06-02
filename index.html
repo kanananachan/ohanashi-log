@@ -59,7 +59,8 @@ body {
 .content-wrap { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--cream); }
 
 /* ── ナビ ── */
-.nav { display: flex; gap: 4px; padding: 1rem 1.5rem; background: transparent; border-bottom: 1px solid var(--border); overflow-x: auto; }
+.nav { display: flex; gap: 4px; padding: 1rem 1.5rem; background: transparent; border-bottom: 1px solid var(--border); overflow-x: auto; align-items: center; }
+.nav-title-img { height: 36px; margin-left: auto; flex-shrink: 0; display: block; }
 .navbtn { padding: 5px 16px; font-size: 12px; font-family: 'Noto Sans JP', sans-serif; border: 1px solid var(--border); border-radius: 20px; background: transparent; color: var(--muted); cursor: pointer; white-space: nowrap; transition: all 0.15s; }
 .navbtn:hover { background: var(--paper2); color: var(--ink); }
 .navbtn.on { background: var(--ink); color: var(--cream); border-color: var(--ink); }
@@ -343,6 +344,7 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
     <button class="navbtn" onclick="sw('num',this)">開催情報</button>
     <button class="navbtn" onclick="sw('dow',this)">曜日ごと作品</button>
     <button class="navbtn" onclick="sw('srch',this)">データ一覧／検索</button>
+    <img src="title.png" alt="はらぺこ文庫 おはなしの時間" class="nav-title-img">
   </div>
 
   <div class="main">
