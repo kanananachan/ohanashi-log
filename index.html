@@ -1312,6 +1312,21 @@ function renderDow(){
   }).join('');
 }
 
+// 同タイトルの他レコードからメタデータを検索
+function lookupMeta(title){
+  if(!title) return null;
+  for(const r of records){
+    for(const p of (r.progs||[])){
+      if(p.title === title && !p.tba && !p.special &&
+         (p.source||p.author||p.translator||p.illustrator)){
+        return { source: p.source||'', author: p.author||'',
+                 translator: p.translator||'', illustrator: p.illustrator||'' };
+      }
+    }
+  }
+  return null;
+}
+
 // タイトル一致で出典等を自動入力
 function autoFillProgMeta(input){
   const row = input.closest('.prog-row');
@@ -1339,15 +1354,18 @@ function editNumProg(dateStr, progIdx){
   const r = records.find(r=>r.date===dateStr);
   if(!r||!r.progs[progIdx]) return;
   const p = r.progs[progIdx];
+  // クレジットが空なら他レコードから補完
+  const meta = (!creditStr(p) && p.title) ? lookupMeta(p.title) : null;
+  const filled = meta ? {...p, ...meta} : p;
   const form = document.createElement('div');
   form.className = 'num-prog-edit';
   form.innerHTML = `
-    <input class="npe-title" type="text" placeholder="タイトル" value="${(p.title||'').replace(/"/g,'&quot;')}">
+    <input class="npe-title" type="text" placeholder="タイトル" value="${(filled.title||'').replace(/"/g,'&quot;')}">
     <div class="num-prog-edit-row">
-      <input class="npe-source" type="text" placeholder="出典" value="${(p.source||'').replace(/"/g,'&quot;')}">
-      <input class="npe-author" type="text" placeholder="作者" value="${(p.author||'').replace(/"/g,'&quot;')}">
-      <input class="npe-translator" type="text" placeholder="訳" value="${(p.translator||'').replace(/"/g,'&quot;')}">
-      <input class="npe-illustrator" type="text" placeholder="絵" value="${(p.illustrator||'').replace(/"/g,'&quot;')}">
+      <input class="npe-source" type="text" placeholder="出典" value="${(filled.source||'').replace(/"/g,'&quot;')}">
+      <input class="npe-author" type="text" placeholder="作者" value="${(filled.author||'').replace(/"/g,'&quot;')}">
+      <input class="npe-translator" type="text" placeholder="訳" value="${(filled.translator||'').replace(/"/g,'&quot;')}">
+      <input class="npe-illustrator" type="text" placeholder="絵" value="${(filled.illustrator||'').replace(/"/g,'&quot;')}">
     </div>
     <div class="num-prog-edit-btns">
       <button class="num-prog-edit-save" onclick="saveNumProg('${dateStr}',${progIdx})">保存</button>
@@ -1390,6 +1408,10 @@ function renderNum(){
     const hasSessions=progs.some(p=>p.session);
     const mkProg=(p,pi)=>{
       const realIdx=r.progs.indexOf(p);
+      // クレジットが空なら同タイトルの他レコードから補完
+      const meta = (!p.tba&&!p.special&&p.type!=='teasobi'&&!creditStr(p))
+        ? lookupMeta(p.title) : null;
+      const dispCredit = creditStr(meta ? {...p,...meta} : p);
       return `<div class="num-prog" id="numprog-${r.date}-${realIdx}">
         <span class="num-prog-badge ${TYPE_CLASS[p.type]||'badge-k'}">${TYPE_LABEL[p.type]||p.type}</span>
         <div class="num-prog-body" style="flex:1">
@@ -1399,7 +1421,7 @@ function renderNum(){
             </div>
             ${!p.tba&&!p.special&&p.type!=='teasobi'?`<button class="num-prog-edit-btn" onclick="editNumProg('${r.date}',${realIdx})">編集</button>`:''}
           </div>
-          ${!p.tba&&!p.special&&p.type!=='teasobi'&&creditStr(p)?`<div class="num-prog-credit">${creditStr(p)}</div>`:''}
+          ${!p.tba&&!p.special&&p.type!=='teasobi'&&dispCredit?`<div class="num-prog-credit">${dispCredit}</div>`:''}
           ${p.reader?`<div class="num-prog-reader">${p.reader}</div>`:''}
         </div>
       </div>`;
