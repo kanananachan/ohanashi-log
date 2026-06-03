@@ -1443,7 +1443,7 @@ function renderNum(){
         <span class="num-dow">${SHORT[r.dow]}曜日</span>
         ${r.times?`<span style="font-size:11px;color:var(--muted)">${r.times.join('　')}</span>`:''}
         ${isFuture?'<span style="font-size:11px;color:#633806;font-style:italic">実施予定</span>':''}
-        <button class="num-prog-edit-btn" style="margin-left:auto" onclick="openModal('${r.date}')">編集</button>
+        <button class="num-prog-edit-btn" style="margin-left:auto" onclick="openEditModal('${r.date}')">編集</button>
       </div>
       <div class="num-body">${progsHtml}</div>
     </div>`;
