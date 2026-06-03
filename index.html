@@ -1367,8 +1367,8 @@ function openBookSearch(btn){
   const row = btn.closest('.prog-row');
   if(!row) return;
   const title = row.querySelector('.prog-title').value.trim();
-  const q = encodeURIComponent(title || '');
-  window.open(`https://iss.ndl.go.jp/books?search_field=title&query=${q}`, '_blank');
+  const q = encodeURIComponent((title ? title + ' ' : '') + '福音館書店');
+  window.open(`https://www.google.com/search?q=${q}`, '_blank');
 }
 
 document.getElementById('cal-grid').innerHTML='<div class="empty">データを読み込み中…</div>';
