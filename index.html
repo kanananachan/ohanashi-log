@@ -841,7 +841,7 @@ function addProgRow(existing){
     </div>
     <div class="prog-fields">
       <div style="display:flex;align-items:center;gap:8px;">
-        <input type="text" class="prog-title" placeholder="タイトル・わらべうた名" value="${esc(existing?.title)}" style="flex:1" oninput="autoFillProgMeta(this)">
+        <input type="text" class="prog-title" placeholder="タイトル・わらべうた名" value="${esc((existing?.special || existing?.tba) ? '' : existing?.title)}" style="flex:1" oninput="autoFillProgMeta(this)">
         <button type="button" class="prog-search-btn" onclick="openBookSearch(this)" title="NDLで検索">🔍</button>
         <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);white-space:nowrap;cursor:pointer;">
           <input type="checkbox" class="prog-tba" ${existing?.tba?'checked':''} style="accent-color:var(--brown)"> 未定
