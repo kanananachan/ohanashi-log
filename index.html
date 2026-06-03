@@ -830,7 +830,8 @@ function addProgRow(existing){
       </div>
     </div>
     </div>`;
-  document.getElementById('prog-rows').appendChild(div);
+  const container = document.getElementById('prog-rows');
+  container.insertBefore(div, container.firstChild);
   updateProgExtra(id);
 
   // ドラッグ＆ドロップ（ハンドルをつかんだときだけ有効）
