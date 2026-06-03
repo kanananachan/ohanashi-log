@@ -81,11 +81,11 @@ body {
 .dash-task-panel { background: rgba(255,255,255,0.75); border-radius: 12px; padding: 16px 18px; }
 .dash-task-title { margin-bottom: 12px; }
 .dash-task-title img { display: block; width: auto; height: auto; max-width: 100%; }
-.dash-task-list { display: flex; flex-direction: column; gap: 8px; }
-.dash-task-item { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--ink); cursor: pointer; border-radius: 8px; padding: 5px 6px; transition: background 0.1s; }
+.dash-task-list { display: flex; flex-direction: column; gap: 3px; }
+.dash-task-item { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--ink); cursor: pointer; border-radius: 8px; padding: 2px 6px; transition: background 0.1s; }
 .dash-task-item:hover { background: var(--paper2); }
 .dash-task-item input[type=checkbox] { accent-color: var(--brown); flex-shrink: 0; width: 16px; height: 16px; cursor: default; }
-.dash-task-item img { width: 26px !important; height: 26px !important; }
+.dash-task-item img { width: 36px !important; height: 36px !important; }
 .dash-task-item span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .dash-task-item.done span { text-decoration: line-through; color: var(--muted); }
 .dash-task-edit { display: flex; flex-direction: column; gap: 5px; padding: 8px; background: var(--paper2); border-radius: 8px; border: 1px solid var(--border); margin: 2px 0; }
@@ -1163,8 +1163,8 @@ function renderDashTasks(){
     const initial = t.assignee ? readerInitial(t.assignee) : '';
     const iconSrc = t.assignee && READER_ICONS[t.assignee];
     const icon = iconSrc
-      ? `<img src="${iconSrc}" style="width:18px;height:18px;border-radius:50%;object-fit:cover;flex-shrink:0">`
-      : (t.assignee ? `<span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:${color};font-size:9px;font-weight:700;color:#fff;flex-shrink:0">${initial}</span>` : '');
+      ? `<img src="${iconSrc}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0">`
+      : (t.assignee ? `<span style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:${color};font-size:13px;font-weight:700;color:#fff;flex-shrink:0">${initial}</span>` : '');
     const dueTxt = t.due ? `<span style="font-size:10px;color:var(--muted);margin-left:4px">${t.due.slice(5).replace('-','/')}</span>` : '';
     return `<div class="dash-task-item${t.done?' done':''}" onclick="editTodo(event,${origIdx})">
       <input type="checkbox" ${t.done?'checked':''} onchange="toggleTodoDone(${origIdx})" onclick="event.stopPropagation()">
