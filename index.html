@@ -424,11 +424,12 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
             <th style="width:4em">曜日</th>
             <th style="width:7em">種別</th>
             <th style="width:25%">タイトル</th>
-            <th style="width:10%">出典</th>
-            <th style="width:10%">作者</th>
-            <th style="width:8%">再話</th>
-            <th style="width:8%">訳・編</th>
-            <th style="width:8%">絵</th>
+            <th style="width:8%">原話</th>
+            <th style="width:8%">出典</th>
+            <th style="width:8%">作者</th>
+            <th style="width:7%">再話</th>
+            <th style="width:7%">訳・編</th>
+            <th style="width:7%">絵</th>
             <th style="width:6em">話し手</th>
           </tr>
         </thead>
@@ -605,6 +606,7 @@ function sorted(){ return [...records].sort((a,b)=>b.num-a.num); }
 
 function creditStr(p){
   const parts=[];
+  if(p.origin) parts.push('原話：'+p.origin);
   if(p.source) parts.push('出典：'+p.source);
   if(p.author) parts.push('作：'+p.author);
   if(p.reteller) parts.push('再話：'+p.reteller);
@@ -850,6 +852,7 @@ function addProgRow(existing){
       </div>
       <input type="text" class="prog-reader" list="readers-list" placeholder="話し手（省略可）" value="${esc(existing?.reader)}">
       <div class="prog-extra-grid" id="pextra-${id}">
+        <input type="text" class="prog-origin" placeholder="原話" value="${esc(existing?.origin)}">
         <input type="text" class="prog-source" placeholder="出典" value="${esc(existing?.source)}">
         <input type="text" class="prog-author" placeholder="作者" value="${esc(existing?.author)}">
         <input type="text" class="prog-reteller" placeholder="再話" value="${esc(existing?.reteller)}">
@@ -976,11 +979,13 @@ async function saveRecord(){
     const reader=row.querySelector('.prog-reader').value.trim();
     if(reader) prog.reader=reader;
     if(type!=='teasobi'){
+      const origin=row.querySelector('.prog-origin').value.trim();
       const source=row.querySelector('.prog-source').value.trim();
       const author=row.querySelector('.prog-author').value.trim();
       const reteller=row.querySelector('.prog-reteller').value.trim();
       const translator=row.querySelector('.prog-translator').value.trim();
       const illustrator=row.querySelector('.prog-illustrator').value.trim();
+      if(origin) prog.origin=origin;
       if(source) prog.source=source;
       if(author) prog.author=author;
       if(reteller) prog.reteller=reteller;
@@ -1351,8 +1356,8 @@ function lookupMeta(title){
   for(const r of records){
     for(const p of (r.progs||[])){
       if(p.title === title && !p.tba && !p.special &&
-         (p.source||p.author||p.reteller||p.translator||p.illustrator)){
-        return { source: p.source||'', author: p.author||'', reteller: p.reteller||'',
+         (p.origin||p.source||p.author||p.reteller||p.translator||p.illustrator)){
+        return { origin: p.origin||'', source: p.source||'', author: p.author||'', reteller: p.reteller||'',
                  translator: p.translator||'', illustrator: p.illustrator||'' };
       }
     }
@@ -1368,6 +1373,7 @@ function autoFillProgMeta(input){
   for(const r of records){
     for(const p of (r.progs||[])){
       if(p.title === title && !p.tba && !p.special){
+        row.querySelector('.prog-origin').value = p.origin || '';
         row.querySelector('.prog-source').value = p.source || '';
         row.querySelector('.prog-author').value = p.author || '';
         row.querySelector('.prog-reteller').value = p.reteller || '';
@@ -1499,7 +1505,7 @@ function renderSrch(){
       if(seen.has(key)) return;
       seen.add(key);
       if(type&&p.type!==type) return;
-      if(q&&!`${p.title} ${p.author||''} ${p.reteller||''} ${p.translator||''} ${p.illustrator||''} ${p.reader||''} ${p.source||''} ${formalName(p.reader||'')}`.toLowerCase().includes(q)) return;
+      if(q&&!`${p.title} ${p.origin||''} ${p.author||''} ${p.reteller||''} ${p.translator||''} ${p.illustrator||''} ${p.reader||''} ${p.source||''} ${formalName(p.reader||'')}`.toLowerCase().includes(q)) return;
       rows.push({r,p});
     });
   });
@@ -1515,6 +1521,7 @@ function renderSrch(){
       <td class="tbl-date">${SHORT[r.dow]}</td>
       <td><span class="prog-badge ${TYPE_CLASS[p.type]||'badge-k'}">${TYPE_LABEL[p.type]||p.type}</span></td>
       <td class="tbl-title">${hl(p.title,q)}</td>
+      <td class="tbl-credit">${hl(p.origin||'',q)}</td>
       <td class="tbl-credit">${hl(p.source||'',q)}</td>
       <td class="tbl-credit">${hl(p.author||'',q)}</td>
       <td class="tbl-credit">${hl(p.reteller||'',q)}</td>
