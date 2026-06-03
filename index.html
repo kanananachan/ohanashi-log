@@ -787,7 +787,8 @@ function _openModal(dateStr,rec,defaultNum,showExtra=false){
 }
 
 function overlayClick(e){
-  if(e.target===document.getElementById('modal-overlay')) closeModal();
+  // オーバーレイ外クリックでは閉じない
+  return;
 }
 function closeModal(){ document.getElementById('modal-overlay').classList.remove('show'); }
 
