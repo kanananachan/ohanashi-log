@@ -1419,7 +1419,7 @@ function renderNum(){
             <div class="num-prog-title" style="${p.tba||p.special?'color:var(--muted);font-style:italic':''}">
               ${p.tba?'（未定）':p.special?'（特別企画）':p.title}
             </div>
-            ${!p.tba&&!p.special&&p.type!=='teasobi'?`<button class="num-prog-edit-btn" onclick="editNumProg('${r.date}',${realIdx})">編集</button>`:''}
+            ${p.type!=='teasobi'?`<button class="num-prog-edit-btn" onclick="editNumProg('${r.date}',${realIdx})">編集</button>`:''}
           </div>
           ${!p.tba&&!p.special&&p.type!=='teasobi'&&dispCredit?`<div class="num-prog-credit">${dispCredit}</div>`:''}
           ${p.reader?`<div class="num-prog-reader">${p.reader}</div>`:''}
