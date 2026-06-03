@@ -933,7 +933,8 @@ async function saveRecord(){
     const tba=row.querySelector('.prog-tba').checked;
     const special=row.querySelector('.prog-special').checked;
     if(!title && !tba && !special) return;
-    const prog={type,title};
+    const displayTitle = title || (tba ? '（未定）' : special ? '（特別企画）' : '');
+    const prog={type, title: displayTitle};
     if(tba) prog.tba=true;
     if(special) prog.special=true;
     if(session) prog.session=session;
