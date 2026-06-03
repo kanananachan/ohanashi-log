@@ -73,7 +73,7 @@ body {
 .view.on { display: block; }
 
 /* ── ダッシュボード（カレンダービューのトップ） ── */
-.dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-bottom: 24px; padding: 0 16px; }
+.dashboard { display: grid; grid-template-columns: 1.4fr 1fr; gap: 32px; margin-bottom: 24px; padding: 0 16px; }
 .dash-left-col { display: flex; flex-direction: column; gap: 20px; padding: 8px 40px; }
 .dash-title-col { display: flex; align-items: flex-start; justify-content: center; }
 
@@ -86,6 +86,7 @@ body {
 .dash-task-item:hover { background: var(--paper2); }
 .dash-task-item input[type=checkbox] { accent-color: var(--brown); flex-shrink: 0; width: 16px; height: 16px; cursor: default; }
 .dash-task-item img { width: 26px !important; height: 26px !important; }
+.dash-task-item span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .dash-task-item.done span { text-decoration: line-through; color: var(--muted); }
 .dash-task-edit { display: flex; flex-direction: column; gap: 5px; padding: 8px; background: var(--paper2); border-radius: 8px; border: 1px solid var(--border); margin: 2px 0; }
 .dash-task-edit input, .dash-task-edit select { font-size: 11px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--cream); color: var(--ink); font-family: 'Noto Sans JP', sans-serif; width: 100%; }
