@@ -786,16 +786,10 @@ function _openModal(dateStr,rec,defaultNum,showExtra=false){
   }
   document.getElementById('modal-overlay').classList.add('show');
   _modalShowExtra = showExtra;
-  // 開催情報の編集ボタンから開いた場合は出典・作者欄を表示（てあそびは除く）
-  document.querySelectorAll('#prog-rows .prog-row').forEach(row=>{
-    const extra = row.querySelector('.prog-extra-grid');
-    const sel = row.querySelector('.prog-type-sel');
-    if(!extra) return;
-    if(sel && sel.value === 'teasobi'){
-      extra.style.display = 'none';
-    } else {
-      extra.style.display = showExtra ? 'grid' : 'none';
-    }
+  // 各行の詳細欄・トグルボタンをupdateProgExtraで制御
+  document.querySelectorAll('#prog-rows .prog-extra-grid').forEach(el=>{
+    const m = el.id.match(/pextra-(\d+)/);
+    if(m) updateProgExtra(Number(m[1]));
   });
 }
 
@@ -851,6 +845,7 @@ function addProgRow(existing){
         </label>
       </div>
       <input type="text" class="prog-reader" list="readers-list" placeholder="話し手（省略可）" value="${esc(existing?.reader)}">
+      <button type="button" class="prog-extra-toggle" id="pextra-toggle-${id}" onclick="toggleProgExtra(${id})" style="display:none;align-self:flex-start;font-size:11px;padding:2px 10px;border-radius:10px;border:1px solid var(--border);background:var(--cream);color:var(--muted);cursor:pointer;margin-top:2px">＋ 詳細情報</button>
       <div class="prog-extra-grid" id="pextra-${id}">
         <input type="text" class="prog-origin" placeholder="原話" value="${esc(existing?.origin)}">
         <input type="text" class="prog-source" placeholder="出典" value="${esc(existing?.source)}">
@@ -914,16 +909,34 @@ function _clearDropIndicators(){
 
 function updateProgExtra(id){
   const extra = document.getElementById('pextra-'+id);
+  const toggle = document.getElementById('pextra-toggle-'+id);
   if(!extra) return;
   const progRow = extra.closest('.prog-row');
   const sel = progRow?.querySelector('.prog-type-sel');
   if(!sel) return;
-  // てあそびは出典・作者欄不要。それ以外はモーダルのshowExtra状態に従う
   if(sel.value === 'teasobi'){
+    // てあそびは詳細欄もボタンも非表示
     extra.style.display = 'none';
+    if(toggle) toggle.style.display = 'none';
+  } else if(_modalShowExtra){
+    // 開催情報からの編集：最初から展開、ボタン非表示
+    extra.style.display = 'grid';
+    if(toggle) toggle.style.display = 'none';
   } else {
-    extra.style.display = _modalShowExtra ? 'grid' : 'none';
+    // カレンダーからの新規登録：トグルボタンを表示、欄は閉じた状態
+    if(toggle) toggle.style.display = 'block';
+    // すでに開いていれば維持
+    if(extra.style.display !== 'grid') extra.style.display = 'none';
   }
+}
+
+function toggleProgExtra(id){
+  const extra = document.getElementById('pextra-'+id);
+  const toggle = document.getElementById('pextra-toggle-'+id);
+  if(!extra || !toggle) return;
+  const opening = extra.style.display !== 'grid';
+  extra.style.display = opening ? 'grid' : 'none';
+  toggle.textContent = opening ? '− 詳細情報' : '＋ 詳細情報';
 }
 
 async function deleteRecord(){
