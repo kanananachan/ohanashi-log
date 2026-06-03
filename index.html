@@ -262,8 +262,16 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
 .prog-remove:hover { color: #c0392b; }
 .prog-fields { display: flex; flex-direction: column; gap: 6px; }
 .prog-fields input { font-size: 12px; padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--cream); color: var(--ink); font-family: 'Noto Sans JP', sans-serif; width: 100%; }
-.prog-extra-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-.prog-extra-grid.hidden { display: none; }
+.prog-extra-grid { display: none; }
+/* 開催情報インライン編集 */
+.num-prog-edit { margin-top: 8px; padding: 10px; background: var(--paper2); border-radius: 8px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px; }
+.num-prog-edit input { font-size: 12px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--cream); color: var(--ink); font-family: 'Noto Sans JP', sans-serif; width: 100%; }
+.num-prog-edit-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.num-prog-edit-btns { display: flex; gap: 6px; }
+.num-prog-edit-save { flex: 1; font-size: 11px; padding: 5px; border: none; border-radius: 6px; background: var(--ink); color: var(--cream); cursor: pointer; font-family: 'Noto Sans JP', sans-serif; }
+.num-prog-edit-cancel { font-size: 11px; padding: 5px 10px; border: 1px solid var(--border); border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; }
+.num-prog-edit-btn { font-size: 10px; padding: 2px 8px; border: 1px solid var(--border); border-radius: 10px; background: transparent; color: var(--muted); cursor: pointer; margin-left: 6px; }
+.num-prog-edit-btn:hover { background: var(--paper2); color: var(--ink); }
 .btn-cancel { font-size: 13px; padding: 8px 18px; border: 1px solid var(--border); border-radius: 8px; background: transparent; color: var(--muted); cursor: pointer; font-family: 'Noto Sans JP', sans-serif; }
 .btn-cancel:hover { background: var(--paper2); color: var(--ink); }
 .btn-save { font-size: 13px; padding: 8px 20px; border: none; border-radius: 8px; background: var(--ink); color: var(--cream); cursor: pointer; font-family: 'Noto Sans JP', sans-serif; }
@@ -813,7 +821,7 @@ function addProgRow(existing){
     </div>
     <div class="prog-fields">
       <div style="display:flex;align-items:center;gap:8px;">
-        <input type="text" class="prog-title" placeholder="タイトル・わらべうた名" value="${esc(existing?.title)}" style="flex:1">
+        <input type="text" class="prog-title" placeholder="タイトル・わらべうた名" value="${esc(existing?.title)}" style="flex:1" oninput="autoFillProgMeta(this)">
         <button type="button" class="prog-search-btn" onclick="openBookSearch(this)" title="NDLで検索">🔍</button>
         <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);white-space:nowrap;cursor:pointer;">
           <input type="checkbox" class="prog-tba" ${existing?.tba?'checked':''} style="accent-color:var(--brown)"> 未定
@@ -882,12 +890,7 @@ function _clearDropIndicators(){
   });
 }
 
-function updateProgExtra(id){
-  const row=document.getElementById('prow-'+id);
-  if(!row) return;
-  const type=row.querySelector('.prog-type-sel').value;
-  document.getElementById('pextra-'+id).classList.toggle('hidden',type==='teasobi');
-}
+function updateProgExtra(id){ /* 出典等はカレンダー登録画面では非表示 */ }
 
 async function deleteRecord(){
   const dateStr=document.getElementById('f-date').value;
@@ -1309,6 +1312,70 @@ function renderDow(){
   }).join('');
 }
 
+// タイトル一致で出典等を自動入力
+function autoFillProgMeta(input){
+  const row = input.closest('.prog-row');
+  const title = input.value.trim();
+  if(!title || title.length < 2) return;
+  for(const r of records){
+    for(const p of (r.progs||[])){
+      if(p.title === title && !p.tba && !p.special){
+        row.querySelector('.prog-source').value = p.source || '';
+        row.querySelector('.prog-author').value = p.author || '';
+        row.querySelector('.prog-translator').value = p.translator || '';
+        row.querySelector('.prog-illustrator').value = p.illustrator || '';
+        return;
+      }
+    }
+  }
+}
+
+// 開催情報ビューの出典等インライン編集
+function editNumProg(dateStr, progIdx){
+  const container = document.getElementById(`numprog-${dateStr}-${progIdx}`);
+  if(!container) return;
+  // 既存フォームを閉じる
+  document.querySelectorAll('.num-prog-edit').forEach(f=>f.remove());
+  const r = records.find(r=>r.date===dateStr);
+  if(!r||!r.progs[progIdx]) return;
+  const p = r.progs[progIdx];
+  const form = document.createElement('div');
+  form.className = 'num-prog-edit';
+  form.innerHTML = `
+    <input class="npe-title" type="text" placeholder="タイトル" value="${(p.title||'').replace(/"/g,'&quot;')}">
+    <div class="num-prog-edit-row">
+      <input class="npe-source" type="text" placeholder="出典" value="${(p.source||'').replace(/"/g,'&quot;')}">
+      <input class="npe-author" type="text" placeholder="作者" value="${(p.author||'').replace(/"/g,'&quot;')}">
+      <input class="npe-translator" type="text" placeholder="訳" value="${(p.translator||'').replace(/"/g,'&quot;')}">
+      <input class="npe-illustrator" type="text" placeholder="絵" value="${(p.illustrator||'').replace(/"/g,'&quot;')}">
+    </div>
+    <div class="num-prog-edit-btns">
+      <button class="num-prog-edit-save" onclick="saveNumProg('${dateStr}',${progIdx})">保存</button>
+      <button class="num-prog-edit-cancel" onclick="this.closest('.num-prog-edit').remove()">キャンセル</button>
+    </div>`;
+  container.querySelector('.num-prog-body').appendChild(form);
+  form.querySelector('.npe-title').focus();
+}
+
+async function saveNumProg(dateStr, progIdx){
+  const form = document.querySelector('.num-prog-edit');
+  if(!form) return;
+  const r = records.find(r=>r.date===dateStr);
+  if(!r||!r.progs[progIdx]) return;
+  const p = r.progs[progIdx];
+  p.title       = form.querySelector('.npe-title').value.trim() || p.title;
+  p.source      = form.querySelector('.npe-source').value.trim();
+  p.author      = form.querySelector('.npe-author').value.trim();
+  p.translator  = form.querySelector('.npe-translator').value.trim();
+  p.illustrator = form.querySelector('.npe-illustrator').value.trim();
+  // GASに保存
+  try {
+    const params = new URLSearchParams({action:'upsert', data:JSON.stringify(r)});
+    await fetch(GAS_URL + '?' + params.toString());
+  } catch(e){ console.warn('保存失敗:', e); }
+  renderNum();
+}
+
 function renderNum(){
   const dow=document.getElementById('num-dow').value;
   const type=document.getElementById('num-type').value;
@@ -1321,25 +1388,32 @@ function renderNum(){
     const isFuture=new Date(r.date+'T12:00:00')>today;
     const progs=type?(r.progs||[]).filter(p=>p.type===type):(r.progs||[]);
     const hasSessions=progs.some(p=>p.session);
-    const mkProg=p=>`<div class="num-prog">
-      <span class="num-prog-badge ${TYPE_CLASS[p.type]||'badge-k'}">${TYPE_LABEL[p.type]||p.type}</span>
-      <div class="num-prog-body">
-        <div class="num-prog-title" style="${p.tba||p.special?'color:var(--muted);font-style:italic':''}">
-          ${p.tba?'（未定）':p.special?'（特別企画）':p.title}
+    const mkProg=(p,pi)=>{
+      const realIdx=r.progs.indexOf(p);
+      return `<div class="num-prog" id="numprog-${r.date}-${realIdx}">
+        <span class="num-prog-badge ${TYPE_CLASS[p.type]||'badge-k'}">${TYPE_LABEL[p.type]||p.type}</span>
+        <div class="num-prog-body" style="flex:1">
+          <div style="display:flex;align-items:center">
+            <div class="num-prog-title" style="${p.tba||p.special?'color:var(--muted);font-style:italic':''}">
+              ${p.tba?'（未定）':p.special?'（特別企画）':p.title}
+            </div>
+            ${!p.tba&&!p.special&&p.type!=='teasobi'?`<button class="num-prog-edit-btn" onclick="editNumProg('${r.date}',${realIdx})">編集</button>`:''}
+          </div>
+          ${!p.tba&&!p.special&&p.type!=='teasobi'&&creditStr(p)?`<div class="num-prog-credit">${creditStr(p)}</div>`:''}
+          ${p.reader?`<div class="num-prog-reader">${p.reader}</div>`:''}
         </div>
-        ${!p.tba&&!p.special&&p.type!=='teasobi'&&creditStr(p)?`<div class="num-prog-credit">${creditStr(p)}</div>`:''}
-        ${p.reader?`<div class="num-prog-reader">${p.reader}</div>`:''}
-      </div></div>`;
+      </div>`;
+    };
     let progsHtml='';
     if(hasSessions){
       ['前半','後半'].forEach(s=>{
         const sp=progs.filter(p=>p.session===s);
         if(!sp.length) return;
         progsHtml+=`<div style="font-size:11px;color:var(--muted);margin:8px 0 4px;padding-bottom:3px;border-bottom:1px solid var(--border)">${s}</div>`;
-        progsHtml+=sp.map(mkProg).join('');
+        progsHtml+=sp.map((p,i)=>mkProg(p,i)).join('');
       });
     } else {
-      progsHtml=progs.map(mkProg).join('');
+      progsHtml=progs.map((p,i)=>mkProg(p,i)).join('');
     }
     return `<div class="num-item" id="rec-${r.date}">
       <div class="num-head" style="${isFuture?'background:#faeeda':'background:#d5cfc8'}">
