@@ -82,18 +82,23 @@ body {
 .dash-task-title { margin-bottom: 12px; }
 .dash-task-title img { display: block; width: auto; height: auto; max-width: 100%; }
 .dash-task-list { display: flex; flex-direction: column; gap: 8px; }
-.dash-task-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--ink); cursor: pointer; border-radius: 6px; padding: 2px 4px; transition: background 0.1s; }
+.dash-task-item { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--ink); cursor: pointer; border-radius: 8px; padding: 5px 6px; transition: background 0.1s; }
 .dash-task-item:hover { background: var(--paper2); }
-.dash-task-item input[type=checkbox] { accent-color: var(--brown); flex-shrink: 0; width: 14px; height: 14px; cursor: default; }
+.dash-task-item input[type=checkbox] { accent-color: var(--brown); flex-shrink: 0; width: 16px; height: 16px; cursor: default; }
+.dash-task-item img { width: 26px !important; height: 26px !important; }
 .dash-task-item.done span { text-decoration: line-through; color: var(--muted); }
 .dash-task-edit { display: flex; flex-direction: column; gap: 5px; padding: 8px; background: var(--paper2); border-radius: 8px; border: 1px solid var(--border); margin: 2px 0; }
 .dash-task-edit input, .dash-task-edit select { font-size: 11px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--cream); color: var(--ink); font-family: 'Noto Sans JP', sans-serif; width: 100%; }
 .dash-task-edit-btns { display: flex; gap: 6px; }
 .dash-task-edit-save { flex: 1; font-size: 11px; padding: 5px; border: none; border-radius: 6px; background: var(--ink); color: var(--cream); cursor: pointer; font-family: 'Noto Sans JP', sans-serif; }
 .dash-task-edit-cancel { font-size: 11px; padding: 5px 10px; border: 1px solid var(--border); border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; font-family: 'Noto Sans JP', sans-serif; }
-.dash-task-add { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px; }
-.dash-task-add input, .dash-task-add select { font-size: 11px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--cream); color: var(--ink); font-family: 'Noto Sans JP', sans-serif; width: 100%; }
-.dash-task-add-btn { font-size: 11px; padding: 5px 10px; border: none; border-radius: 6px; background: var(--ink); color: var(--cream); cursor: pointer; width: 100%; font-family: 'Noto Sans JP', sans-serif; }
+.dash-task-add-toggle { display: flex; justify-content: center; margin-top: 12px; }
+.dash-task-add-toggle-btn { width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid var(--border); background: var(--cream); color: var(--muted); font-size: 20px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.dash-task-add-toggle-btn:hover { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+.dash-task-add { display: none; margin-top: 10px; padding: 12px; background: var(--paper2); border-radius: 10px; border: 1px solid var(--border); flex-direction: column; gap: 6px; }
+.dash-task-add.open { display: flex; }
+.dash-task-add input, .dash-task-add select { font-size: 12px; padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--cream); color: var(--ink); font-family: 'Noto Sans JP', sans-serif; width: 100%; }
+.dash-task-add-btn { font-size: 12px; padding: 6px 10px; border: none; border-radius: 6px; background: var(--ink); color: var(--cream); cursor: pointer; width: 100%; font-family: 'Noto Sans JP', sans-serif; }
 .dash-task-add-btn:hover { opacity: 0.85; }
 
 /* 今週のプログラム */
@@ -429,7 +434,10 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
         <div class="dash-task-panel">
           <div class="dash-task-title"><img src="task.png" alt="タスク"></div>
           <div class="dash-task-list" id="dash-task-list"></div>
-          <div class="dash-task-add">
+          <div class="dash-task-add-toggle">
+            <button class="dash-task-add-toggle-btn" onclick="toggleTaskAddForm()" id="task-add-toggle-btn" title="タスクを追加">＋</button>
+          </div>
+          <div class="dash-task-add" id="dash-task-add-form">
             <input id="dash-todo-text" type="text" placeholder="タスクを追加…" onkeydown="if(event.key==='Enter')event.preventDefault()">
             <input id="dash-todo-due"  type="date">
             <select id="dash-todo-assignee"><option value="">担当者</option></select>
@@ -1213,6 +1221,14 @@ function saveTodoEdit(idx){
   renderDashTasks();
 }
 
+function toggleTaskAddForm(){
+  const form = document.getElementById('dash-task-add-form');
+  const btn  = document.getElementById('task-add-toggle-btn');
+  const open = form.classList.toggle('open');
+  btn.textContent = open ? '×' : '＋';
+  if(open) document.getElementById('dash-todo-text').focus();
+}
+
 function addDashTodo(){
   const text = document.getElementById('dash-todo-text').value.trim();
   const due = document.getElementById('dash-todo-due').value;
@@ -1224,6 +1240,11 @@ function addDashTodo(){
   document.getElementById('dash-todo-text').value = '';
   document.getElementById('dash-todo-due').value = '';
   document.getElementById('dash-todo-assignee').value = '';
+  // フォームを閉じる
+  const form = document.getElementById('dash-task-add-form');
+  const btn  = document.getElementById('task-add-toggle-btn');
+  form.classList.remove('open');
+  btn.textContent = '＋';
   renderDashTasks();
 }
 
