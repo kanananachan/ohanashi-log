@@ -742,6 +742,7 @@ function hidePopup(){ document.getElementById('cal-popup').classList.remove('sho
 
 // ── モーダル ──
 let progRowId=0;
+let _modalShowExtra=false;
 
 function openNewModal(dateStr){
   hidePopup();
@@ -780,9 +781,17 @@ function _openModal(dateStr,rec,defaultNum,showExtra=false){
     addProgRow(null);
   }
   document.getElementById('modal-overlay').classList.add('show');
-  // 開催情報の編集ボタンから開いた場合は出典・作者欄を表示
-  document.querySelectorAll('#prog-rows .prog-extra-grid').forEach(el=>{
-    el.style.display = showExtra ? 'grid' : 'none';
+  _modalShowExtra = showExtra;
+  // 開催情報の編集ボタンから開いた場合は出典・作者欄を表示（てあそびは除く）
+  document.querySelectorAll('#prog-rows .prog-row').forEach(row=>{
+    const extra = row.querySelector('.prog-extra-grid');
+    const sel = row.querySelector('.prog-type-sel');
+    if(!extra) return;
+    if(sel && sel.value === 'teasobi'){
+      extra.style.display = 'none';
+    } else {
+      extra.style.display = showExtra ? 'grid' : 'none';
+    }
   });
 }
 
@@ -848,11 +857,6 @@ function addProgRow(existing){
     </div>`;
   const container = document.getElementById('prog-rows');
   container.insertBefore(div, container.firstChild);
-  // すでに他の行で出典欄が表示されていれば、新しい行も同様に表示
-  const firstExtra = container.querySelector('.prog-extra-grid:not(#pextra-'+id+')');
-  if(firstExtra && firstExtra.style.display === 'grid'){
-    div.querySelector('.prog-extra-grid').style.display = 'grid';
-  }
   updateProgExtra(id);
 
   // ドラッグ＆ドロップ（ハンドルをつかんだときだけ有効）
@@ -902,7 +906,19 @@ function _clearDropIndicators(){
   });
 }
 
-function updateProgExtra(id){ /* 出典等はカレンダー登録画面では非表示 */ }
+function updateProgExtra(id){
+  const extra = document.getElementById('pextra-'+id);
+  if(!extra) return;
+  const progRow = extra.closest('.prog-row');
+  const sel = progRow?.querySelector('.prog-type-sel');
+  if(!sel) return;
+  // てあそびは出典・作者欄不要。それ以外はモーダルのshowExtra状態に従う
+  if(sel.value === 'teasobi'){
+    extra.style.display = 'none';
+  } else {
+    extra.style.display = _modalShowExtra ? 'grid' : 'none';
+  }
+}
 
 async function deleteRecord(){
   const dateStr=document.getElementById('f-date').value;
