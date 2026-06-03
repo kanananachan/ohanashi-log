@@ -751,10 +751,10 @@ function openNewModal(dateStr){
 function openEditModal(dateStr){
   hidePopup();
   const rec=records.find(r=>r.date===dateStr);
-  _openModal(dateStr,rec,rec?rec.num:null);
+  _openModal(dateStr,rec,rec?rec.num:null,true);
 }
 
-function _openModal(dateStr,rec,defaultNum){
+function _openModal(dateStr,rec,defaultNum,showExtra=false){
   progRowId=0;
   document.getElementById('f-date').value=dateStr;
   document.getElementById('f-num').value=defaultNum||'';
@@ -780,6 +780,10 @@ function _openModal(dateStr,rec,defaultNum){
     addProgRow(null);
   }
   document.getElementById('modal-overlay').classList.add('show');
+  // 開催情報の編集ボタンから開いた場合は出典・作者欄を表示
+  document.querySelectorAll('#prog-rows .prog-extra-grid').forEach(el=>{
+    el.style.display = showExtra ? 'grid' : 'none';
+  });
 }
 
 function overlayClick(e){
@@ -843,6 +847,11 @@ function addProgRow(existing){
     </div>`;
   const container = document.getElementById('prog-rows');
   container.insertBefore(div, container.firstChild);
+  // すでに他の行で出典欄が表示されていれば、新しい行も同様に表示
+  const firstExtra = container.querySelector('.prog-extra-grid:not(#pextra-'+id+')');
+  if(firstExtra && firstExtra.style.display === 'grid'){
+    div.querySelector('.prog-extra-grid').style.display = 'grid';
+  }
   updateProgExtra(id);
 
   // ドラッグ＆ドロップ（ハンドルをつかんだときだけ有効）
