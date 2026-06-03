@@ -426,8 +426,9 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
             <th style="width:25%">タイトル</th>
             <th style="width:10%">出典</th>
             <th style="width:10%">作者</th>
-            <th style="width:10%">訳・編</th>
-            <th style="width:10%">絵</th>
+            <th style="width:8%">再話</th>
+            <th style="width:8%">訳・編</th>
+            <th style="width:8%">絵</th>
             <th style="width:6em">話し手</th>
           </tr>
         </thead>
@@ -606,6 +607,7 @@ function creditStr(p){
   const parts=[];
   if(p.source) parts.push('出典：'+p.source);
   if(p.author) parts.push('作：'+p.author);
+  if(p.reteller) parts.push('再話：'+p.reteller);
   if(p.translator) parts.push('訳：'+p.translator);
   if(p.illustrator) parts.push('絵：'+p.illustrator);
   return parts.join('　');
@@ -850,6 +852,7 @@ function addProgRow(existing){
       <div class="prog-extra-grid" id="pextra-${id}">
         <input type="text" class="prog-source" placeholder="出典" value="${esc(existing?.source)}">
         <input type="text" class="prog-author" placeholder="作者" value="${esc(existing?.author)}">
+        <input type="text" class="prog-reteller" placeholder="再話" value="${esc(existing?.reteller)}">
         <input type="text" class="prog-translator" placeholder="訳" value="${esc(existing?.translator)}">
         <input type="text" class="prog-illustrator" placeholder="絵" value="${esc(existing?.illustrator)}">
       </div>
@@ -975,10 +978,12 @@ async function saveRecord(){
     if(type!=='teasobi'){
       const source=row.querySelector('.prog-source').value.trim();
       const author=row.querySelector('.prog-author').value.trim();
+      const reteller=row.querySelector('.prog-reteller').value.trim();
       const translator=row.querySelector('.prog-translator').value.trim();
       const illustrator=row.querySelector('.prog-illustrator').value.trim();
       if(source) prog.source=source;
       if(author) prog.author=author;
+      if(reteller) prog.reteller=reteller;
       if(translator) prog.translator=translator;
       if(illustrator) prog.illustrator=illustrator;
     }
@@ -1346,8 +1351,8 @@ function lookupMeta(title){
   for(const r of records){
     for(const p of (r.progs||[])){
       if(p.title === title && !p.tba && !p.special &&
-         (p.source||p.author||p.translator||p.illustrator)){
-        return { source: p.source||'', author: p.author||'',
+         (p.source||p.author||p.reteller||p.translator||p.illustrator)){
+        return { source: p.source||'', author: p.author||'', reteller: p.reteller||'',
                  translator: p.translator||'', illustrator: p.illustrator||'' };
       }
     }
@@ -1365,6 +1370,7 @@ function autoFillProgMeta(input){
       if(p.title === title && !p.tba && !p.special){
         row.querySelector('.prog-source').value = p.source || '';
         row.querySelector('.prog-author').value = p.author || '';
+        row.querySelector('.prog-reteller').value = p.reteller || '';
         row.querySelector('.prog-translator').value = p.translator || '';
         row.querySelector('.prog-illustrator').value = p.illustrator || '';
         return;
@@ -1493,7 +1499,7 @@ function renderSrch(){
       if(seen.has(key)) return;
       seen.add(key);
       if(type&&p.type!==type) return;
-      if(q&&!`${p.title} ${p.author||''} ${p.translator||''} ${p.illustrator||''} ${p.reader||''} ${p.source||''} ${formalName(p.reader||'')}`.toLowerCase().includes(q)) return;
+      if(q&&!`${p.title} ${p.author||''} ${p.reteller||''} ${p.translator||''} ${p.illustrator||''} ${p.reader||''} ${p.source||''} ${formalName(p.reader||'')}`.toLowerCase().includes(q)) return;
       rows.push({r,p});
     });
   });
@@ -1511,6 +1517,7 @@ function renderSrch(){
       <td class="tbl-title">${hl(p.title,q)}</td>
       <td class="tbl-credit">${hl(p.source||'',q)}</td>
       <td class="tbl-credit">${hl(p.author||'',q)}</td>
+      <td class="tbl-credit">${hl(p.reteller||'',q)}</td>
       <td class="tbl-credit">${hl(p.translator||'',q)}</td>
       <td class="tbl-credit">${hl(p.illustrator||'',q)}</td>
       <td class="tbl-reader">${p.reader?hl(formalName(p.reader),q):''}</td>
