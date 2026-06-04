@@ -914,9 +914,9 @@ function updateProgExtra(id){
     extra.style.display = 'none';
     if(toggle) toggle.style.display = 'none';
   } else {
-    // 常にトグルボタンを表示、欄は閉じた状態で初期化
-    if(toggle) toggle.style.display = 'block';
-    if(extra.style.display !== 'grid') extra.style.display = 'none';
+    // 常にトグルボタンを表示、欄は閉じた状態にリセット
+    if(toggle){ toggle.style.display = 'block'; toggle.textContent = '＋ 詳細情報'; }
+    extra.style.display = 'none';
   }
 }
 
