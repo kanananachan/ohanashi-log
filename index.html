@@ -854,6 +854,14 @@ function addProgRow(existing){
   const container = document.getElementById('prog-rows');
   container.insertBefore(div, container.firstChild);
   updateProgExtra(id);
+  // 既存データに詳細情報がない場合、同タイトルの他記録から自動補完
+  if(existing && existing.title && !existing.tba && !existing.special){
+    const hasExtra = existing.origin||existing.source||existing.author||existing.reteller||existing.translator||existing.illustrator;
+    if(!hasExtra){
+      const titleInput = div.querySelector('.prog-title');
+      if(titleInput) autoFillProgMeta(titleInput);
+    }
+  }
 
   // ドラッグ＆ドロップ（ハンドルをつかんだときだけ有効）
   const handle = div.querySelector('.prog-drag-handle');
