@@ -816,7 +816,7 @@ function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').rep
 function addProgRow(existing){
   progRowId++;
   const id=progRowId;
-  const type=existing?.type||'katarite';
+  const type=existing?.type||'';
   const div=document.createElement('div');
   div.className='prog-row';
   div.id='prow-'+id;
@@ -863,8 +863,10 @@ function addProgRow(existing){
     </div>`;
   const container = document.getElementById('prog-rows');
   container.insertBefore(div, container.firstChild);
-  // 行の色クラスを初期設定
-  div.classList.add(type==='katarite'?'type-k':type==='ehon'?'type-e':'type-t');
+  // 行の色クラスを初期設定（タイプが選択済みの場合のみ）
+  if(type==='katarite') div.classList.add('type-k');
+  else if(type==='ehon') div.classList.add('type-e');
+  else if(type==='teasobi') div.classList.add('type-t');
   updateProgExtra(id);
   // 既存データに詳細情報がない場合、同タイトルの他記録から自動補完
   if(existing && existing.title && !existing.tba && !existing.special){
@@ -948,12 +950,12 @@ function updateProgExtra(id){
   const progRow = extra.closest('.prog-row');
   const sel = progRow?.querySelector('.prog-type-sel');
   if(!sel) return;
-  if(sel.value === 'teasobi'){
-    // てあそびは詳細欄もボタンも非表示
+  if(sel.value === 'teasobi' || sel.value === ''){
+    // てあそび・未選択は詳細欄もボタンも非表示
     extra.style.display = 'none';
     if(toggle) toggle.style.display = 'none';
   } else {
-    // 常にトグルボタンを表示、欄は閉じた状態にリセット
+    // おはなし・絵本はトグルボタンを表示、欄は閉じた状態にリセット
     if(toggle){ toggle.style.display = 'block'; toggle.textContent = '＋ 詳細情報'; }
     extra.style.display = 'none';
   }
