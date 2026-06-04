@@ -778,6 +778,7 @@ function _openModal(dateStr,rec,defaultNum,showExtra=false){
   document.getElementById('modal-title').textContent=rec?`第${rec.num}回 編集`:'新しい記録を入力';
   document.getElementById('btn-delete').style.display=rec?'':'none';
   onDateChange();
+  _modalShowExtra = showExtra;
   document.getElementById('prog-rows').innerHTML='';
   if(rec&&rec.progs&&rec.progs.length){
     rec.progs.forEach(p=>addProgRow(p));
@@ -785,12 +786,6 @@ function _openModal(dateStr,rec,defaultNum,showExtra=false){
     addProgRow(null);
   }
   document.getElementById('modal-overlay').classList.add('show');
-  _modalShowExtra = showExtra;
-  // 各行の詳細欄・トグルボタンをupdateProgExtraで制御
-  document.querySelectorAll('#prog-rows .prog-extra-grid').forEach(el=>{
-    const m = el.id.match(/pextra-(\d+)/);
-    if(m) updateProgExtra(Number(m[1]));
-  });
 }
 
 function overlayClick(e){
