@@ -756,7 +756,7 @@ function openNewModal(dateStr){
 function openEditModal(dateStr){
   hidePopup();
   const rec=records.find(r=>r.date===dateStr);
-  _openModal(dateStr,rec,rec?rec.num:null,true);
+  _openModal(dateStr,rec,rec?rec.num:null);
 }
 
 function _openModal(dateStr,rec,defaultNum,showExtra=false){
@@ -913,14 +913,9 @@ function updateProgExtra(id){
     // てあそびは詳細欄もボタンも非表示
     extra.style.display = 'none';
     if(toggle) toggle.style.display = 'none';
-  } else if(_modalShowExtra){
-    // 開催情報からの編集：最初から展開、ボタン非表示
-    extra.style.display = 'grid';
-    if(toggle) toggle.style.display = 'none';
   } else {
-    // カレンダーからの新規登録：トグルボタンを表示、欄は閉じた状態
+    // 常にトグルボタンを表示、欄は閉じた状態で初期化
     if(toggle) toggle.style.display = 'block';
-    // すでに開いていれば維持
     if(extra.style.display !== 'grid') extra.style.display = 'none';
   }
 }
