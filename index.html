@@ -1096,6 +1096,17 @@ async function fetchTodos(){
     // タスクオブジェクト（textプロパティを持つ）かチェック
     if(Array.isArray(data) && (data.length===0 || data[0].text !== undefined)){
       _todos = data;
+      // GASが空の場合、localStorageに残っている旧データを移行
+      if(_todos.length === 0){
+        try{
+          const legacy = JSON.parse(localStorage.getItem('ohanashi-todos')||'[]');
+          if(legacy.length > 0){
+            _todos = legacy;
+            saveTodos(_todos); // GASに保存
+            localStorage.removeItem('ohanashi-todos');
+          }
+        }catch(e2){}
+      }
     } else {
       _todos = [];
     }
