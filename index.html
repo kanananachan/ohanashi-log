@@ -1093,7 +1093,12 @@ async function fetchTodos(){
   try{
     const res = await fetch(GAS_URL+'?action=getTodos');
     const data = await res.json();
-    _todos = Array.isArray(data) ? data : [];
+    // タスクオブジェクト（textプロパティを持つ）かチェック
+    if(Array.isArray(data) && (data.length===0 || data[0].text !== undefined)){
+      _todos = data;
+    } else {
+      _todos = [];
+    }
   }catch(e){ _todos = []; }
   renderDashTasks();
 }
