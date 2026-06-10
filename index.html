@@ -1078,8 +1078,25 @@ const READER_ICONS = {
   'おおさん': 'face-icon_oosan.png'
 };
 
-function loadTodos(){ try{ return JSON.parse(localStorage.getItem(TODO_KEY)||'[]'); }catch(e){ return []; } }
-function saveTodos(todos){ localStorage.setItem(TODO_KEY, JSON.stringify(todos)); }
+// todos はメモリ上に保持（GASから読み込み）
+let _todos = [];
+function loadTodos(){ return _todos; }
+function saveTodos(todos){
+  _todos = todos;
+  // GASに非同期保存（失敗してもUIは続行）
+  fetch(GAS_URL+'?action=saveTodos', {
+    method:'POST',
+    body: JSON.stringify(todos)
+  }).catch(()=>{});
+}
+async function fetchTodos(){
+  try{
+    const res = await fetch(GAS_URL+'?action=getTodos');
+    const data = await res.json();
+    _todos = Array.isArray(data) ? data : [];
+  }catch(e){ _todos = []; }
+  renderDashTasks();
+}
 
 function readerColor(name){
   const READERS_LOCAL = ['まるちゃん','かなえちゃん','そねちゃん','ちゃこさん','しーちゃん','おりちゃん','おおさん'];
@@ -1099,8 +1116,7 @@ function initTodo(){
       sel.appendChild(opt);
     });
   });
-  renderTodoBar();
-  renderTodoList();
+  fetchTodos(); // GASからタスクを読み込む
 }
 
 function toggleTodoPanel(){
