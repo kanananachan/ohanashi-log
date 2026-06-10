@@ -1083,11 +1083,9 @@ let _todos = [];
 function loadTodos(){ return _todos; }
 function saveTodos(todos){
   _todos = todos;
-  // GASに非同期保存（失敗してもUIは続行）
-  fetch(GAS_URL+'?action=saveTodos', {
-    method:'POST',
-    body: JSON.stringify(todos)
-  }).catch(()=>{});
+  // GASに非同期保存（upsertと同じGETリクエスト方式）
+  const params = new URLSearchParams({action:'saveTodos', data: JSON.stringify(todos)});
+  fetch(GAS_URL+'?'+params.toString()).catch(()=>{});
 }
 async function fetchTodos(){
   try{
