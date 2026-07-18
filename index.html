@@ -590,6 +590,13 @@ const KYUGYO = new Set([
 ]);
 const KYUGYO_KARI = new Set([
 ]);
+// 開催イベント（薄いグリーン）
+const EVENTS = {
+  '2026-10-10': 'SAC',
+  '2026-10-11': 'SAC',
+  '2026-10-12': 'SAC',
+  '2026-11-08': '文化祭',
+};
 
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbyUO7N1OgLLdVvZHUjSgUHB0TRkOeFDUF_V9bHUqOKOsTsNybZTtpR8uu8erWKbQG86/exec';
 let records = [];
@@ -676,9 +683,11 @@ function buildMonthHtml(year, m, byDate){
 
     const isKyugyo=KYUGYO.has(ds);
     const isKyugyoKari=KYUGYO_KARI.has(ds);
+    const eventName=EVENTS[ds]||'';
     let bg='';
     if(isKyugyo) bg='background:#fdecea;';
     else if(isKyugyoKari) bg='background:#fff4ec;';
+    else if(eventName) bg='background:#e8f5e9;';
     else if(rec&&isFuture) bg='background:#fff8ee;';
     else if(isPast) bg='background:#f8f4ef;';
 
@@ -686,6 +695,7 @@ function buildMonthHtml(year, m, byDate){
     if(rec) inner+=`<div class="cal-dot ${isFuture?'future':'done'}"></div><div style="font-size:8px;text-align:center;color:${isFuture?'#8a6020':'#5f5e5a'};margin-top:1px">第${rec.num}回</div>`;
     if(isKyugyo) inner+=`<div class="cal-kyugyo">休業</div>`;
     else if(isKyugyoKari) inner+=`<div class="cal-kyugyo cal-kyugyo-kari">休業(仮)</div>`;
+    if(eventName) inner+=`<div style="font-size:7px;text-align:center;color:#2e7d32;font-weight:600;line-height:1.2;margin-top:1px">${eventName}</div>`;
 
     let handlers='';
     if(rec) handlers=`onmouseenter="showPopup(event,'${ds}')" onmouseleave="hidePopup()" onclick="openEditModal('${ds}')"`;
