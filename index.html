@@ -1414,14 +1414,20 @@ function renderDashOhanashi(){
   const fmt = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   const todayStr = fmt(today);
 
-  // 未来のおはなし（katarite）を収集
+  // 未来のおはなし（katarite）を収集、タイトルが同じなら最初の1件だけ
+  const seen = new Set();
   const items = [];
   records
     .filter(r => r.date >= todayStr)
     .sort((a,b) => a.date.localeCompare(b.date))
     .forEach(r => {
       (r.progs||[]).filter(p => p.type==='katarite' && !p.tba && !p.special && p.title && p.reader)
-        .forEach(p => items.push({date: r.date, title: p.title, reader: p.reader}));
+        .forEach(p => {
+          if(!seen.has(p.title)){
+            seen.add(p.title);
+            items.push({date: r.date, title: p.title, reader: p.reader});
+          }
+        });
     });
 
   const rows = items.map(item => {
