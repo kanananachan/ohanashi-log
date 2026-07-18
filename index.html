@@ -465,8 +465,8 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
             <button class="dash-task-add-btn" onclick="addDashTodo()">＋ 追加</button>
           </div>
         </div>
-        <!-- ミニカレンダー -->
-        <div id="dash-mini-cal-wrap"></div>
+        <!-- おはなし覚える -->
+        <div id="dash-ohanashi-wrap"></div>
       </div>
 
       <!-- 中央列：今週のプログラム -->
@@ -1270,7 +1270,7 @@ function renderAll(){
 function renderDashboard(){
   renderDashTasks();
   renderDashProgram();
-  renderDashMiniCal();
+  renderDashOhanashi();
 }
 
 function renderDashTasks(){
@@ -1397,14 +1397,41 @@ function renderDashProgram(){
     </div>`).join('')).join('');
 }
 
-function renderDashMiniCal(){
-  const el = document.getElementById('dash-mini-cal-wrap');
+function renderDashOhanashi(){
+  const el = document.getElementById('dash-ohanashi-wrap');
   if(!el) return;
   const today = new Date(); today.setHours(0,0,0,0);
-  const y = today.getFullYear(), m = today.getMonth();
-  const byDate={};
-  records.forEach(r=>{ if(r.date.startsWith(y)) byDate[r.date]=r; });
-  el.innerHTML = buildMonthHtml(y, m, byDate);
+  const fmt = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const todayStr = fmt(today);
+
+  // 未来のおはなし（katarite）を収集
+  const items = [];
+  records
+    .filter(r => r.date >= todayStr)
+    .sort((a,b) => a.date.localeCompare(b.date))
+    .forEach(r => {
+      (r.progs||[]).filter(p => p.type==='katarite' && !p.tba && !p.special && p.title && p.reader)
+        .forEach(p => items.push({date: r.date, title: p.title, reader: p.reader}));
+    });
+
+  const rows = items.map(item => {
+    const d = new Date(item.date+'T12:00:00');
+    const dateStr = `${d.getMonth()+1}/${d.getDate()}`;
+    const iconSrc = READER_ICONS[item.reader];
+    const icon = iconSrc
+      ? `<img src="${iconSrc}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0">`
+      : `<span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:${readerColor(item.reader)};font-size:11px;font-weight:700;color:#fff;flex-shrink:0">${item.reader[0]}</span>`;
+    return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--border)">
+      ${icon}
+      <span style="font-size:12px;color:var(--ink);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${item.title}</span>
+      <span style="font-size:11px;color:var(--muted);white-space:nowrap">${dateStr}まで</span>
+    </div>`;
+  }).join('');
+
+  el.innerHTML = `<div class="dash-mini-cal" style="margin-top:16px">
+    <div class="dash-mini-cal-head">おはなし覚える</div>
+    ${rows || '<div style="font-size:12px;color:var(--muted)">予定はありません</div>'}
+  </div>`;
 }
 
 function renderDow(){
