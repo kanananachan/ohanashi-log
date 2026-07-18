@@ -536,7 +536,7 @@ table.srch-tbl tr:hover td { background: var(--paper2); }
         <input type="date" id="f-date" onchange="onDateChange()">
         <span class="dow-tag" id="f-dow-tag" style="display:none"></span>
       </div>
-      <div class="form-group">
+      <div class="form-group" style="display:none">
         <label>開催回</label>
         <input type="number" id="f-num" min="1" placeholder="回数を入力">
         <span style="font-size:12px;color:var(--muted)">回</span>
@@ -784,7 +784,14 @@ function _openModal(dateStr,rec,defaultNum,showExtra=false){
     });
     if(customTimes.length) document.getElementById('f-times-custom').value=customTimes.join('、');
   }
-  document.getElementById('modal-title').textContent=rec?`第${rec.num}回 編集`:'新しい記録を入力';
+  // 回数を日付順で自動計算してタイトルに表示
+  if(rec){
+    const allDates = records.map(r=>r.date).sort();
+    const autoNum = allDates.indexOf(rec.date) + 1;
+    document.getElementById('modal-title').textContent = `第${autoNum}回 編集`;
+  } else {
+    document.getElementById('modal-title').textContent = '新しい記録を入力';
+  }
   document.getElementById('btn-delete').style.display=rec?'':'none';
   onDateChange();
   _modalShowExtra = showExtra;
@@ -997,11 +1004,12 @@ async function deleteRecord(){
 
 async function saveRecord(){
   const dateStr=document.getElementById('f-date').value;
-  const num=parseInt(document.getElementById('f-num').value);
-  if(!dateStr||isNaN(num)){
-    alert('日付と開催回を入力してください');
-    return;
-  }
+  if(!dateStr){ alert('日付を入力してください'); return; }
+  // 日付順に並べて回数を自動採番
+  const allDates = records.map(r=>r.date).filter(d=>d!==dateStr);
+  allDates.push(dateStr);
+  allDates.sort();
+  const num = allDates.indexOf(dateStr) + 1;
   const dow=getDow(dateStr);
   const times=[];
   document.querySelectorAll('#f-times-group input[type="checkbox"]:checked').forEach(cb=>times.push(cb.value));
