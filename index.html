@@ -1011,6 +1011,7 @@ async function deleteRecord(){
   renderAll();
   btn.disabled=false;
   btn.textContent='削除する';
+  recalcAllNums();
 }
 
 async function saveRecord(){
@@ -1080,6 +1081,25 @@ async function saveRecord(){
   renderAll();
   btn.disabled=false;
   btn.textContent='保存する';
+  recalcAllNums();
+}
+
+// 全レコードの回数を日付順に再計算し、変更があったものだけGASに保存
+async function recalcAllNums(){
+  const sorted = [...records].sort((a,b)=>a.date.localeCompare(b.date));
+  const changed = [];
+  sorted.forEach((r, i) => {
+    const newNum = i + 1;
+    if(r.num !== newNum){
+      r.num = newNum;
+      changed.push(r);
+    }
+  });
+  for(const r of changed){
+    const params = new URLSearchParams({action:'upsert', data:JSON.stringify(r)});
+    await fetch(GAS_URL + '?' + params.toString()).catch(()=>{});
+  }
+  if(changed.length > 0) renderAll();
 }
 
 // ── TODO ──────────────────────────────────────────────
@@ -1415,6 +1435,13 @@ function renderDashOhanashi(){
   const fmt = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   const todayStr = fmt(today);
 
+  // 過去に一度でも開催済みのタイトルを除外
+  const pastTitles = new Set();
+  records.filter(r => r.date < todayStr).forEach(r => {
+    (r.progs||[]).filter(p => p.type==='katarite' && !p.tba && !p.special && p.title)
+      .forEach(p => pastTitles.add(p.title));
+  });
+
   // 未来のおはなし（katarite）を収集、タイトルが同じなら最初の1件だけ
   const seen = new Set();
   const items = [];
@@ -1422,11 +1449,20 @@ function renderDashOhanashi(){
     .filter(r => r.date >= todayStr)
     .sort((a,b) => a.date.localeCompare(b.date))
     .forEach(r => {
-      (r.progs||[]).filter(p => p.type==='katarite' && !p.tba && !p.special && p.title && p.reader)
+      (r.progs||[]).filter(p => p.type==='katarite' && !p.special && p.reader)
         .forEach(p => {
-          if(!seen.has(p.title)){
-            seen.add(p.title);
-            items.push({date: r.date, title: p.title, reader: p.reader});
+          if(p.tba){
+            // 未定は話し手＋日付の組み合わせで重複除外
+            const key = `tba:${r.date}:${p.reader}`;
+            if(!seen.has(key)){
+              seen.add(key);
+              items.push({date: r.date, title: null, reader: p.reader});
+            }
+          } else if(p.title && !pastTitles.has(p.title)){
+            if(!seen.has(p.title)){
+              seen.add(p.title);
+              items.push({date: r.date, title: p.title, reader: p.reader});
+            }
           }
         });
     });
@@ -1440,7 +1476,7 @@ function renderDashOhanashi(){
       : `<span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:${readerColor(item.reader)};font-size:11px;font-weight:700;color:#fff;flex-shrink:0">${item.reader[0]}</span>`;
     return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--border)">
       ${icon}
-      <span style="font-size:12px;color:var(--ink);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${item.title}</span>
+      <span style="font-size:12px;${item.title?'color:var(--ink)':'color:var(--muted);font-style:italic'};flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${item.title||'おはなし未定'}</span>
       <span style="font-size:11px;color:var(--muted);white-space:nowrap">${dateStr}まで</span>
     </div>`;
   }).join('');
@@ -1671,6 +1707,7 @@ document.getElementById('cal-grid').innerHTML='<div class="empty">データを�
 
 loadFromSheet().then(()=>{
   renderAll();
+  recalcAllNums();
 }).catch(()=>{
   renderAll();
 });
