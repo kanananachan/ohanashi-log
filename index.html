@@ -1452,8 +1452,8 @@ function renderDashOhanashi(){
       (r.progs||[]).filter(p => p.type==='katarite' && !p.special && p.reader)
         .forEach(p => {
           if(p.tba){
-            // 未定は話し手＋日付の組み合わせで重複除外
-            const key = `tba:${r.date}:${p.reader}`;
+            // 未定は話し手ごとに最初の1件だけ
+            const key = `tba:${p.reader}`;
             if(!seen.has(key)){
               seen.add(key);
               items.push({date: r.date, title: null, reader: p.reader});
