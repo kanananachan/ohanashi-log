@@ -1492,12 +1492,24 @@ function renderDow(){
       return items.filter(p=>{const k=p.date+p.title;return seen.has(k)?false:seen.add(k);});
     };
     const today=new Date(); today.setHours(0,0,0,0);
+    const DOW_ICON_MAP = {
+      'まるちゃん': {bg:'#c94020', label:'ま'},
+      'おおさん':   {bg:'#e07820', label:'お'},
+      'そねちゃん': {bg:'#5bbcd0', label:'そ'},
+      'かなえちゃん':{bg:'#b090d0', label:'か'},
+      'ちーくん':   {bg:'#d4b800', label:'き'},
+      'ちゃこさん': {bg:'#2060c0', label:'あ'},
+      'あちゃこ':   {bg:'#2060c0', label:'あ'},
+      'しーちゃん': {bg:'#1aada0', label:'し'},
+      'おりちゃん': null,
+    };
     const mkIcon=name=>{
       if(!name) return '';
-      const src=READER_ICONS[name];
-      return src
-        ?`<img src="${src}" style="width:18px;height:18px;border-radius:50%;object-fit:cover;flex-shrink:0">`
-        :`<span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:${readerColor(name)};font-size:9px;font-weight:700;color:#fff;flex-shrink:0">${name[0]}</span>`;
+      const info=DOW_ICON_MAP[name];
+      if(info===null) return '';
+      const bg=info?info.bg:readerColor(name);
+      const lbl=info?info.label:name[0];
+      return `<span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:${bg};font-size:9px;font-weight:700;color:#fff;flex-shrink:0">${lbl}</span>`;
     };
     const mkList=items=>dedup(items).length
       ?dedup(items).map(p=>{
