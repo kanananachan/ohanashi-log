@@ -1492,10 +1492,20 @@ function renderDow(){
       return items.filter(p=>{const k=p.date+p.title;return seen.has(k)?false:seen.add(k);});
     };
     const today=new Date(); today.setHours(0,0,0,0);
+    const mkIcon=name=>{
+      if(!name) return '';
+      const src=READER_ICONS[name];
+      return src
+        ?`<img src="${src}" style="width:18px;height:18px;border-radius:50%;object-fit:cover;flex-shrink:0">`
+        :`<span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:${readerColor(name)};font-size:9px;font-weight:700;color:#fff;flex-shrink:0">${name[0]}</span>`;
+    };
     const mkList=items=>dedup(items).length
       ?dedup(items).map(p=>{
           const future=new Date(p.date+'T12:00:00')>today;
-          return `<div class="dow-title-item" style="${future?'color:var(--border)':''}">${p.title}</div>`;
+          return `<div class="dow-title-item" style="display:flex;align-items:center;gap:4px;${future?'color:var(--border)':''}">
+            <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">${p.title}</span>
+            ${mkIcon(p.reader)}
+          </div>`;
         }).join('')
       :`<div class="dow-empty">まだなし</div>`;
     const kt=byType('katarite'),et=byType('ehon'),tt=byType('teasobi');
